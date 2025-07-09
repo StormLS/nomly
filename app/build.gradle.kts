@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "com.example.nomlymealtracker"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -50,6 +50,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.androidx.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -58,7 +60,13 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Extra Compose stuff
+    implementation(libs.androidx.foundation)
+
     // Firebase Integration
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
+
+    // Compose Navigation
+    implementation(libs.androidx.navigation.compose)
 }
