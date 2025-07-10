@@ -66,6 +66,7 @@ dependencies {
     // Firebase Integration
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore.ktx)
 
     // Compose Navigation
     implementation(libs.androidx.navigation.compose)
