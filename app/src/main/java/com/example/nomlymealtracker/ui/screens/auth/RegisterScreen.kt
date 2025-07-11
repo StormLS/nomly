@@ -65,8 +65,6 @@ fun RegisterScreen(
     scope: CoroutineScope,
     viewModel: AuthViewModel = viewModel()
 ){
-
-
     val name = viewModel.userName
     val email = viewModel.userEmail
     val password = viewModel.userPassword

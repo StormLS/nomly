@@ -9,6 +9,7 @@ import com.example.nomlymealtracker.ui.screens.auth.ForgotPasswordScreen
 import com.example.nomlymealtracker.ui.screens.auth.LoginScreen
 import com.example.nomlymealtracker.ui.screens.auth.RegisterScreen
 import com.example.nomlymealtracker.ui.screens.home.HomeScreen
+import com.example.nomlymealtracker.ui.screens.home.HomeScreenContent
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -38,22 +39,33 @@ fun NavGraph(
         }
 
         composable(Screen.Register.route) {
-            RegisterScreen(navController, snackbarHostState, scope)
+            RegisterScreen(
+                navController = navController,
+                snackbarHost = snackbarHostState,
+                scope = scope
+            )
         }
 
         composable(Screen.ForgotPassword.route) {
-            ForgotPasswordScreen(navController, snackbarHostState, scope)
+            ForgotPasswordScreen(
+                navController = navController,
+                snackbarHost = snackbarHostState,
+                scope = scope
+            )
         }
 
         composable(Screen.Home.route) {
             HomeScreen(
-                // TODO: Implement some form of Logout
+                navController = navController,
+                snackbarHost = snackbarHostState,
+                coroutineScope = scope,
 //                onLogout = {
 //                    navController.navigate(Screen.Login.route) {
 //                        popUpTo(0) // clears back stack
 //                    }
 //                }
             )
+
         }
     }
 }
