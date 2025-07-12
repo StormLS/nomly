@@ -13,5 +13,6 @@ data class Meal(
     val portionSize: String = "",
     val imageUrl: String? = null,
     val timestamp: Timestamp = Timestamp.now(),
-    val id: String = ""
+    val id: String = "",
+    val mealId: String = ""
 )

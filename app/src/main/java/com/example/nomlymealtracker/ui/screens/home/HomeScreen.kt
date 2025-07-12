@@ -48,6 +48,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
@@ -57,9 +59,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.nomlymealtracker.Helper
 import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.models.MealType
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 // --- DUMMY DATA AND TYPES FOR A DASHBOARD BUILD
 private val mealTypes = listOf("Breakfast", "Lunch", "Dinner")
@@ -70,25 +79,24 @@ private val macroTypes = listOf("Protein", "Carbs", "Fats")
 @Preview
 @Composable
 fun HomeScreenContentPreview(){
-    val dummyScrollState = rememberLazyListState()
-    val selectedMealTypes = remember { mutableStateListOf<String>() }
-    val selectedMacros = remember { mutableStateListOf<String>() }
-    var showBottomSheet = remember { mutableStateOf(false) }
-    val dummySearchText = remember { mutableStateOf("Sample search") }
-    val dummyScope = rememberCoroutineScope()
+    val dummySelectedMealTypes = remember { mutableStateListOf<String>() }
+    val dummySelectedMacros = remember { mutableStateListOf<String>() }
+    val dummyShowBottomSheet = remember { mutableStateOf(false) }
 
     NomlyMealTrackerTheme() {
         HomeScreenContent(
-            scrollState = dummyScrollState,
-            selectedMealTypes = selectedMealTypes,
-            selectedMacros = selectedMacros,
-            showBottomSheet = showBottomSheet,
+            scrollState = rememberLazyListState(),
+            coroutineScope = rememberCoroutineScope(),
+
+            selectedMealTypes = dummySelectedMealTypes,
+            selectedMacros = dummySelectedMacros,
+            showBottomSheet = dummyShowBottomSheet,
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            searchText = dummySearchText,
-            coroutineScope = dummyScope,
+
+            searchText = "",
+            onSearchTermChange = {},
             meals = emptyList(),
-            isLoading = false,
-            errorMessage = ""
+            isLoading = false
         )
     }
 }
@@ -101,33 +109,35 @@ fun HomeScreen(
     coroutineScope: CoroutineScope,
     viewModel: HomeViewModel = viewModel()
 ) {
-    var scrollState = rememberLazyListState()
-    var sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showBottomSheet = remember { mutableStateOf(false) }
+    println("Opening HomeScreen")
 
-    var selectedMealTypes = remember { mutableStateListOf<String>() }
-    var selectedMacros = remember { mutableStateListOf<String>() }
+    val scrollState = rememberLazyListState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val showBottomSheet = remember { mutableStateOf(false) }
 
-    var searchText = remember { mutableStateOf("") }
+    val selectedMealTypes = remember { mutableStateListOf<String>() }
+    val selectedMacros = remember { mutableStateListOf<String>() }
 
-    val meals = viewModel.meals
-    val isLoading = viewModel.isLoading
-    val errorMessage = viewModel.errorMessage
+    val searchText = viewModel.searchTerm
+
+    val meals by viewModel.meals.collectAsState()
+    val isLoading = viewModel.mealsIsLoading
 
     HomeScreenContent(
         scrollState,
         sheetState,
+        coroutineScope,
 
         selectedMealTypes,
         selectedMacros,
 
         showBottomSheet,
+
         searchText,
-        coroutineScope,
+        onSearchTermChange = { viewModel.searchTerm = it },
 
         meals = meals,
         isLoading = isLoading,
-        errorMessage = errorMessage
     )
 }
 
@@ -136,17 +146,18 @@ fun HomeScreen(
 fun HomeScreenContent(
     scrollState: LazyListState,
     sheetState: SheetState,
+    coroutineScope: CoroutineScope,
 
     selectedMealTypes: MutableList<String>,
     selectedMacros: MutableList<String>,
 
     showBottomSheet: MutableState<Boolean>,
-    searchText: MutableState<String>,
-    coroutineScope: CoroutineScope,
+
+    searchText: String,
+    onSearchTermChange: (String) -> Unit,
 
     meals: List<Meal>,
     isLoading: Boolean,
-    errorMessage: String?
 ){
     if (showBottomSheet.value) {
         ModalBottomSheet(
@@ -183,10 +194,9 @@ fun HomeScreenContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
-                    value = searchText.value,
-                    onValueChange = {
-                        searchText.value = it
-                    },
+                    value = searchText,
+                    onValueChange = onSearchTermChange
+                    ,
                     modifier = Modifier
                         .weight(1f)
                         .height(56.dp),
@@ -333,11 +343,12 @@ fun MealCard(meal: Meal){
 
                 Text(
                     textAlign = TextAlign.End,
-                    text = meal.timestamp.toString(),
+                    text = Helper.formatTimestamp(meal.timestamp),
                     style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic
                 )
             }
             Text(
+
                 text = meal.description,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
