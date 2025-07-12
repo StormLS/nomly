@@ -1,7 +1,6 @@
 package com.example.nomlymealtracker.ui.screens.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,19 +11,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
@@ -33,7 +34,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.MutableState
@@ -47,28 +47,20 @@ import kotlinx.coroutines.launch
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.nomlymealtracker.Helper
 import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.models.MealType
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.example.nomlymealtracker.ui.screens.home.mealCard.MealCard
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 // --- DUMMY DATA AND TYPES FOR A DASHBOARD BUILD
 private val mealTypes = listOf("Breakfast", "Lunch", "Dinner")
@@ -95,8 +87,14 @@ fun HomeScreenContentPreview(){
 
             searchText = "",
             onSearchTermChange = {},
-            meals = emptyList(),
-            isLoading = false
+            meals = listOf(Meal(
+                title = "Grilled Chicken Salad",
+                description = "Grilled chicken breast with mixed greens, cherry tomatoes, cucumbers, and olive oil dressing.",
+                type = MealType.LUNCH,
+            )),
+            isLoading = false,
+
+            onAddNewMealClick = {}
         )
     }
 }
@@ -107,6 +105,7 @@ fun HomeScreen(
     navController: NavController,
     snackbarHost: SnackbarHostState,
     coroutineScope: CoroutineScope,
+    onAddNewMealClick: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
     println("Opening HomeScreen")
@@ -138,6 +137,8 @@ fun HomeScreen(
 
         meals = meals,
         isLoading = isLoading,
+
+        onAddNewMealClick = { onAddNewMealClick() }
     )
 }
 
@@ -158,6 +159,8 @@ fun HomeScreenContent(
 
     meals: List<Meal>,
     isLoading: Boolean,
+
+    onAddNewMealClick: () -> Unit,
 ){
     if (showBottomSheet.value) {
         ModalBottomSheet(
@@ -174,10 +177,23 @@ fun HomeScreenContent(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Nomly Meal Tracker") },
+                navigationIcon = {
+                    IconButton(onClick = {
+
+                    }) {
+                        Icon(Icons.Default.Close, contentDescription = "Back")
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = { Text("Add Meal") },
-                onClick = {},
+                onClick = onAddNewMealClick,
+                containerColor = MaterialTheme.colorScheme.onPrimary,
                 icon = { Icon(Icons.Default.Add, contentDescription = null) }
             )
         }
@@ -276,16 +292,37 @@ fun HomeScreenContent(
                 state = scrollState,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                if (meals.isEmpty()) {
+                // If the Meals are still loading show my loader
+                if (isLoading) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
+                }
+
+                // If its no longer laoding and their are no meals to show
+                if (!isLoading && meals.isEmpty()) {
                     item {
                         Text(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 24.dp),
                             textAlign = TextAlign.Center,
                             text = "You haven't added any meals yet",
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
-                } else {
+                }
+
+                // Perfect case, show user meals
+                if (!isLoading && meals.isNotEmpty()) {
                     items(meals) { meal ->
                         MealCard(meal)
                     }
@@ -295,6 +332,8 @@ fun HomeScreenContent(
     }
 }
 
+
+// Meal Card Preview composable for designing
 @Preview
 @Composable
 fun MealCardPreview(){
@@ -316,111 +355,3 @@ fun MealCardPreview(){
     }
 }
 
-@Composable
-fun MealCard(meal: Meal){
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = meal.title,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Text(
-                    textAlign = TextAlign.End,
-                    text = Helper.formatTimestamp(meal.timestamp),
-                    style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic
-                )
-            }
-            Text(
-
-                text = meal.description,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth().horizontalScroll(state = rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(4.dp),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                    tonalElevation = 2.dp
-                ) {
-                    Text(
-                        text = meal.type.displayName,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                meal.protein?.let{
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        tonalElevation = 2.dp
-                    ) {
-                        Text(
-                            text = "Protein ${meal.protein}",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                meal.carbs?.let{
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        tonalElevation = 2.dp
-                    ) {
-                        Text(
-                            text = "Carbs ${meal.carbs}",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                meal.fats?.let{
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        tonalElevation = 2.dp
-                    ) {
-                        Text(
-                            text = "Fats ${meal.fats}",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-        }
-    }
-}

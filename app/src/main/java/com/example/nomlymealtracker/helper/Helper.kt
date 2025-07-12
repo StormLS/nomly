@@ -1,4 +1,4 @@
-package com.example.nomlymealtracker
+package com.example.nomlymealtracker.helper
 
 import android.text.format.DateUtils
 import com.google.firebase.Timestamp

@@ -5,11 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.nomlymealtracker.ui.screens.addMeal.AddMealScreen
 import com.example.nomlymealtracker.ui.screens.auth.ForgotPasswordScreen
 import com.example.nomlymealtracker.ui.screens.auth.LoginScreen
 import com.example.nomlymealtracker.ui.screens.auth.RegisterScreen
 import com.example.nomlymealtracker.ui.screens.home.HomeScreen
-import com.example.nomlymealtracker.ui.screens.home.HomeScreenContent
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -42,7 +42,7 @@ fun NavGraph(
             RegisterScreen(
                 navController = navController,
                 snackbarHost = snackbarHostState,
-                scope = scope
+                coroutineScope = scope
             )
         }
 
@@ -59,13 +59,23 @@ fun NavGraph(
                 navController = navController,
                 snackbarHost = snackbarHostState,
                 coroutineScope = scope,
+                onAddNewMealClick = {
+                    navController.navigate(Screen.AddMeal.route)
+                },
 //                onLogout = {
 //                    navController.navigate(Screen.Login.route) {
 //                        popUpTo(0) // clears back stack
 //                    }
 //                }
             )
+        }
 
+        composable(Screen.AddMeal.route){
+            AddMealScreen(
+                navController = navController,
+                snackbarHost = snackbarHostState,
+                coroutineScope = scope,
+            )
         }
     }
 }
