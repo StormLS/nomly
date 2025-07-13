@@ -75,6 +75,7 @@ import com.example.nomlymealtracker.helper.Helper
 import com.example.nomlymealtracker.helper.Helper.shareMeal
 import com.example.nomlymealtracker.ui.screens.home.HomeViewModel
 import com.example.nomlymealtracker.ui.screens.home.mealCard.MealCard
+import com.example.nomlymealtracker.ui.theme.MidOrange
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineScope
 
@@ -196,7 +197,7 @@ fun ViewMealScreenContent(
                     .fillMaxWidth()
                     .height(180.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(MaterialTheme.colorScheme.primary),
+                    .background(MidOrange),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -222,17 +223,17 @@ fun ViewMealScreenContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text("Time Eaten", style = MaterialTheme.typography.titleLarge)
+            Text("Time Eaten", style = MaterialTheme.typography.titleMedium)
             Text(Helper.formatTimestamp(timeOfConsumption) , style = MaterialTheme.typography.bodyLarge)
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text("Meal Type", style = MaterialTheme.typography.titleLarge)
+            Text("Meal Type", style = MaterialTheme.typography.titleMedium)
             Text(selectedMealType.name, style = MaterialTheme.typography.bodyLarge)
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text("Portion Size", style = MaterialTheme.typography.titleLarge)
+            Text("Portion Size", style = MaterialTheme.typography.titleMedium)
             Text(portionSize, style = MaterialTheme.typography.bodyLarge)
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -242,7 +243,22 @@ fun ViewMealScreenContent(
             MacronutrientRow(label = "Carbs", value = carbs)
             MacronutrientRow(label = "Fats", value = fats)
             Spacer(modifier = Modifier.height(6.dp))
-            MacronutrientRow(label = "Calories", value = calories)
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Calories",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = calories ?: "N/A",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
@@ -259,7 +275,7 @@ fun MacronutrientRow(label: String, value: String?) {
             style = MaterialTheme.typography.titleMedium
         )
         Text(
-            text = value ?: "-",
+            text = if (value.isNullOrBlank()) "N/A" else "${value}g",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.primary
         )

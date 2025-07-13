@@ -1,6 +1,14 @@
 package com.example.nomlymealtracker.ui.screens.addMeal
 
+import android.Manifest
+import android.content.ContentValues
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,25 +36,34 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.nomlymealtracker.data.models.MealType
 import com.example.nomlymealtracker.helper.ExposedDropdownMenu
+import com.example.nomlymealtracker.helper.ImageSourceDialog
 import com.example.nomlymealtracker.helper.TextFieldWithLabel
 import com.example.nomlymealtracker.ui.theme.LightOrange
 import com.example.nomlymealtracker.ui.theme.MidOrange
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -66,6 +84,8 @@ fun AddMealScreenPreview() {
             fats = "",
             calories = "",
 
+            selectedImageUri = null,
+
             onTitleChange = {},
             onDescriptionChange = {},
             onTimeOfConsumptionChange = {},
@@ -76,6 +96,7 @@ fun AddMealScreenPreview() {
             onFatsChange = {},
             onCaloriesChange = {},
 
+            onAddImageClick = {},
             onSubmitClick = {},
             onBackClick = {},
 
@@ -84,6 +105,7 @@ fun AddMealScreenPreview() {
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun AddMealScreen(
     snackbarHost: SnackbarHostState,
@@ -91,6 +113,7 @@ fun AddMealScreen(
     onBackClick: () -> Unit,
     viewModel: AddMealViewModel = viewModel(),
 ) {
+    // Main Screen input fields
     val title = viewModel.title
     val description = viewModel.description
     val timeOfConsumption = viewModel.timeOfConsumption
@@ -105,6 +128,61 @@ fun AddMealScreen(
     val successMessage = viewModel.successMessage
 
     val isSubmitting = viewModel.isSubmitting
+
+    // Camera and Gallery options
+    val context = LocalContext.current
+    val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
+
+    val selectedImageUri = viewModel.imageUri
+    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
+    var showImageSourceDialog by remember { mutableStateOf(false) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        println("Gallery URI = $uri")
+        uri?.let { viewModel.imageUri = it }
+    }
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success && cameraImageUri != null) {
+            println("Camera URI = $cameraImageUri")
+            viewModel.imageUri = cameraImageUri
+        }
+    }
+    fun createImageUri(): Uri {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "meal_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Nomly")
+        }
+
+        return context.contentResolver.insert(
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+            contentValues
+        ) ?: throw IllegalStateException("Failed to create MediaStore entry")
+    }
+    fun launchCameraWithPermission() {
+        if (cameraPermissionState.status.isGranted) {
+            cameraImageUri = createImageUri()
+            cameraLauncher.launch(cameraImageUri!!)
+        } else {
+            cameraPermissionState.launchPermissionRequest()
+        }
+    }
+    fun launchGallery() {
+        galleryLauncher.launch("image/*")
+    }
+    if (showImageSourceDialog) {
+        ImageSourceDialog(
+            onDismiss = { showImageSourceDialog = false },
+            onCameraClick = {
+                showImageSourceDialog = false
+                launchCameraWithPermission()
+            },
+            onGalleryClick = {
+                showImageSourceDialog = false
+                launchGallery()
+            }
+        )
+    }
 
     LaunchedEffect(successMessage, errorMessage) {
         errorMessage?.let {
@@ -132,6 +210,8 @@ fun AddMealScreen(
         fats = fats,
         calories = calories,
 
+        selectedImageUri = selectedImageUri,
+
         onTitleChange = { viewModel.title = it },
         onDescriptionChange = { viewModel.description = it },
         onTimeOfConsumptionChange = { viewModel.timeOfConsumption = it },
@@ -142,6 +222,7 @@ fun AddMealScreen(
         onFatsChange = { viewModel.fats = it },
         onCaloriesChange = { viewModel.calories = it },
 
+        onAddImageClick = { showImageSourceDialog = true },
         onSubmitClick = { viewModel.submitMeal() },
         onBackClick = { onBackClick() },
 
@@ -164,6 +245,8 @@ fun AddMealScreenContent(
     fats: String,
     calories: String,
 
+    selectedImageUri: Uri?,
+
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onTimeOfConsumptionChange: (String) -> Unit,
@@ -174,6 +257,7 @@ fun AddMealScreenContent(
     onFatsChange: (String) -> Unit,
     onCaloriesChange: (String) -> Unit,
 
+    onAddImageClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onBackClick: () -> Unit,
 
@@ -207,37 +291,49 @@ fun AddMealScreenContent(
                     .fillMaxWidth()
                     .height(180.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(MidOrange),
+                    .background(MidOrange)
+                    .clickable { onAddImageClick() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Image,
-                    contentDescription = "Add Image",
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-                Text(
-                    text = "Add Image Reference",
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(top = 48.dp)
-                )
+                if (selectedImageUri != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(selectedImageUri),
+                        contentDescription = "Selected Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Image,
+                            contentDescription = "Add Image",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                        Text(
+                            text = "Add Image Reference",
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            TextFieldWithLabel("Title (100 Characters)", title, onTitleChange, isPassword = false)
+            TextFieldWithLabel("Title (100 Characters) *", title, onTitleChange, isPassword = false, maxLength = 100, showCharCount = true)
             Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Description (300 Characters)", description, onDescriptionChange, isPassword = false)
+            TextFieldWithLabel("Description (300 Characters) *", description, onDescriptionChange, isPassword = false, maxLength = 300, showCharCount = true)
             Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Time at Consumption", timeOfConsumption, onTimeOfConsumptionChange, isPassword = false)
+            TextFieldWithLabel("Time at Consumption *", timeOfConsumption, onTimeOfConsumptionChange, isPassword = false)
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(text = "Meal Type", style = MaterialTheme.typography.labelLarge)
+            Text(text = "Meal Type *", style = MaterialTheme.typography.labelLarge)
             ExposedDropdownMenu(selectedMealType, onSelectedMealTypeChange)
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            TextFieldWithLabel("Quantity / Portion Size", portionSize, onPortionSizeChange, isPassword = false)
+            TextFieldWithLabel("Quantity / Portion Size *", portionSize, onPortionSizeChange, isPassword = false)
 
             Spacer(modifier = Modifier.height(24.dp))
 

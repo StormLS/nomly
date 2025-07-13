@@ -197,7 +197,7 @@ fun HomeScreenContent(
 ){
     if (showBottomSheet.value) {
         ModalBottomSheet(
-            onDismissRequest = { showBottomSheet.value },
+            onDismissRequest = { showBottomSheet.value = false },
             sheetState = sheetState,
             dragHandle = { BottomSheetDefaults.DragHandle() }
         ) {
@@ -209,7 +209,6 @@ fun HomeScreenContent(
         }
     }
 
-    val context = LocalContext.current
     if (showLogoutDialog.value) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog.value = false },

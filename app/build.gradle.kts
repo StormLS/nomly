@@ -70,10 +70,13 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
 
     // Compose Navigation
     implementation(libs.androidx.navigation.compose)
 
-    // Google Play Services
-    //implementation(libs.play.services)
+    // Images
+    implementation(libs.coil.compose)
+    implementation(libs.accompanist.permissions)
+
 }

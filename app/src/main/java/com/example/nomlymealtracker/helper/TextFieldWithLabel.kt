@@ -10,6 +10,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -36,14 +37,20 @@ fun TextFieldWithLabel(
     value: String,
     onValueChange: (String) -> Unit,
     isPassword: Boolean = false,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    maxLength: Int? = null,
+    showCharCount: Boolean = false
 ) {
     val visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
     Text(text = label, style = MaterialTheme.typography.labelLarge)
     Spacer(modifier = Modifier.height(4.dp))
     TextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = {
+            if (maxLength == null || it.length <= maxLength) {
+                onValueChange(it)
+            }
+        },
         placeholder = { Text(label) },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
@@ -56,4 +63,12 @@ fun TextFieldWithLabel(
             focusedContainerColor = MidOrange
         )
     )
+
+    if (showCharCount && maxLength != null) {
+        Text(
+            text = "${value.length}/$maxLength",
+            style = MaterialTheme.typography.bodySmall,
+            color = if (value.length > maxLength) Color.Red else Color.Gray,
+        )
+    }
 }

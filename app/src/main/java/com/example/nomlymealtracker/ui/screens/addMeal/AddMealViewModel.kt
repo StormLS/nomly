@@ -1,7 +1,9 @@
 package com.example.nomlymealtracker.ui.screens.addMeal
 
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,6 +29,7 @@ class AddMealViewModel(
     var carbs by mutableStateOf("")
     var fats by mutableStateOf("")
     var calories by mutableStateOf("")
+    var imageUri by mutableStateOf<Uri?>(null)
 
     var errorMessage by mutableStateOf<String?>(null)
     var successMessage by mutableStateOf<String?>(null)
@@ -51,28 +54,42 @@ class AddMealViewModel(
                 return
             }
 
-            val meal = Meal(
-                title = title.trim(),
-                description = description.trim(),
-                type = selectedMealType,
-                portionSize = portionSize.trim(),
-                protein = protein.toDoubleOrNull(),
-                carbs = carbs.toDoubleOrNull(),
-                fats = fats.toDoubleOrNull(),
-                calories = calories.toDoubleOrNull(),
-                timestamp = Timestamp.now(),
-                id = userId
-            )
-
             viewModelScope.launch {
+                var imageUrl: String? = null
+                if (imageUri != null) {
+                    println("Image: $imageUri")
+                    val uploadResult = addMealRepository.uploadMealImage(userId, imageUri!!)
+                    if (uploadResult.isSuccess) {
+                        imageUrl = uploadResult.getOrNull()
+                    } else {
+                        errorMessage = "Failed to upload image: ${uploadResult.exceptionOrNull()?.message}"
+                        imageUrl = "Image not available at this time"
+                        //return@launch
+                    }
+                }
+
+                val meal = Meal(
+                    title = title.trim(),
+                    description = description.trim(),
+                    type = selectedMealType,
+                    calories = calories.toDoubleOrNull(),
+                    protein = protein.toDoubleOrNull(),
+                    carbs = carbs.toDoubleOrNull(),
+                    fats = fats.toDoubleOrNull(),
+                    portionSize = portionSize.trim(),
+                    imageUrl = imageUrl,
+                    timestamp = Timestamp.now(),
+                    id = userId
+                )
+
                 val result = addMealRepository.submitMeal(meal)
                 if (result.isSuccess) {
                     val message = result.getOrNull()
                     successMessage = message
                     reset()
                 } else {
-                    val error = result.exceptionOrNull()?.message
-                    errorMessage = error
+                    val errorMesg = result.exceptionOrNull()?.message
+                    errorMessage = errorMesg
                 }
             }
         } catch (e: Exception) {
@@ -92,13 +109,16 @@ class AddMealViewModel(
         carbs = ""
         fats = ""
         calories = ""
+        imageUri = null
         isSubmitting = false
     }
 
     private fun validateInputs(): String? {
         return when {
             title.trim().isEmpty() -> "Title is required"
+            title.length > 100 -> "Title must be 100 characters or less"
             description.trim().isEmpty() -> "Description is required"
+            description.length > 300 -> "Description must be 300 characters or less"
             timeOfConsumption.trim().isEmpty() -> "Time of consumption is required"
             portionSize.trim().isEmpty() -> "Portion size is required"
             else -> null // No validation errors

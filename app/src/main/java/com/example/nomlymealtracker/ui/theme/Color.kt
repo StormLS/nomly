@@ -8,6 +8,8 @@ val Positive = Color(0xFF00C853)
 
 val PureWhite = Color(0xFFFFFFFF)
 
+val BackOrange = Color(0xFFF8F8F4)
+
 val LightOrange = Color(0xFFFFFBF7)
 val MidOrange = Color(0xFFFFEBDE)
 val Orange = Color(0xFFFF6D00)

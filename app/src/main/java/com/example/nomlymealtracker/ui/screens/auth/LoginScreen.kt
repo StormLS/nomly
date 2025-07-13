@@ -3,8 +3,10 @@ package com.example.nomlymealtracker.ui.screens.auth
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nomlymealtracker.R
+import com.example.nomlymealtracker.ui.theme.BackOrange
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -101,6 +104,8 @@ fun LoginScreenContent(
     onRegisterClick: () -> Unit,
     onLoginClick: () -> Unit
 ) {
+    val scrollState = rememberScrollState()
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHost)
     }) { padding ->
@@ -108,23 +113,23 @@ fun LoginScreenContent(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(Color(0xFFFFFBF7)) // Soft off-white background
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(scrollState)
                     .padding(horizontal = 16.dp)
-                    .align(Alignment.Center),
+                    .imePadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(24.dp))
+
                 Image(
                     painter = painterResource(id = R.drawable.nomly_logo),
                     contentDescription = "Logo",
                     modifier = Modifier
                         .size(180.dp)
                 )
-
-                Text("Login", fontSize = 22.sp, fontWeight = FontWeight.Bold)
 
                 // Will represent the input field for the User Email
                 OutlinedTextField(
