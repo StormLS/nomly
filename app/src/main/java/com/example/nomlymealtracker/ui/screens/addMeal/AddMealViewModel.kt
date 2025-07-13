@@ -4,13 +4,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.models.MealType
+import com.example.nomlymealtracker.data.repository.AddMealRepository
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.delay
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 // The view model for the Add New Meal screen
-class AddMealViewModel : ViewModel()
+class AddMealViewModel(
+    private val addMealRepository: AddMealRepository = AddMealRepository()
+) : ViewModel()
 {
     // Core user input fields
     var title by mutableStateOf("")
@@ -28,36 +33,56 @@ class AddMealViewModel : ViewModel()
 
     var isSubmitting by mutableStateOf(false)
 
-    suspend fun submitMeal(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun submitMeal() {
+        val error = validateInputs()
+        if (error != null) {
+            viewModelScope.launch {
+                errorMessage = error
+            }
+            return
+        }
+
         isSubmitting = true
 
         try {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            if (userId == null) {
+                errorMessage = "User not authenticated"
+                return
+            }
+
             val meal = Meal(
                 title = title.trim(),
                 description = description.trim(),
                 type = selectedMealType,
                 portionSize = portionSize.trim(),
-                protein = protein.toIntOrNull(),
-                carbs = carbs.toIntOrNull(),
-                fats = fats.toIntOrNull(),
-                calories = calories.toIntOrNull(),
-                timestamp = Timestamp.now()
+                protein = protein.toDoubleOrNull(),
+                carbs = carbs.toDoubleOrNull(),
+                fats = fats.toDoubleOrNull(),
+                calories = calories.toDoubleOrNull(),
+                timestamp = Timestamp.now(),
+                id = userId
             )
 
-            //TODO: Put firebase logic here
-            delay(3000) // simulate network call
-            onSuccess()
-            //TODO: Put firebase logic here
-
-
+            viewModelScope.launch {
+                val result = addMealRepository.submitMeal(meal)
+                if (result.isSuccess) {
+                    val message = result.getOrNull()
+                    successMessage = message
+                    reset()
+                } else {
+                    val error = result.exceptionOrNull()?.message
+                    errorMessage = error
+                }
+            }
         } catch (e: Exception) {
-            onError(e.message ?: "Unknown error")
+            errorMessage = "Failed to add the meal - $e"
         } finally {
             isSubmitting = false
         }
     }
 
-    fun reset() {
+    private fun reset() {
         title = ""
         description = ""
         timeOfConsumption = ""
@@ -68,5 +93,15 @@ class AddMealViewModel : ViewModel()
         fats = ""
         calories = ""
         isSubmitting = false
+    }
+
+    private fun validateInputs(): String? {
+        return when {
+            title.trim().isEmpty() -> "Title is required"
+            description.trim().isEmpty() -> "Description is required"
+            timeOfConsumption.trim().isEmpty() -> "Time of consumption is required"
+            portionSize.trim().isEmpty() -> "Portion size is required"
+            else -> null // No validation errors
+        }
     }
 }

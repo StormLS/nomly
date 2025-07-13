@@ -20,7 +20,6 @@ class HomeRepository
         val mealList = mutableListOf<Meal>()
 
         try {
-            println("Trying to Fetch Data From Firestorm")
             val snapshot = db.collection("meals")
                 //.whereEqualTo("id", userId)
                 //.orderBy("timestamp", Query.Direction.DESCENDING)
@@ -37,7 +36,6 @@ class HomeRepository
             println("FirebaseFetch - Error getting meals - $e")
         }
 
-        println("Meal List:\n$mealList")
         return@withContext mealList
     }
 }

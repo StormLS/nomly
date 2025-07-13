@@ -46,15 +46,19 @@ import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 import kotlinx.coroutines.launch
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.nomlymealtracker.data.models.Meal
@@ -77,6 +81,7 @@ fun HomeScreenContentPreview(){
 
     NomlyMealTrackerTheme() {
         HomeScreenContent(
+            snackbarHost = SnackbarHostState(),
             scrollState = rememberLazyListState(),
             coroutineScope = rememberCoroutineScope(),
 
@@ -94,6 +99,7 @@ fun HomeScreenContentPreview(){
             )),
             isLoading = false,
 
+            onViewMealClick = {},
             onAddNewMealClick = {}
         )
     }
@@ -122,7 +128,12 @@ fun HomeScreen(
     val meals by viewModel.meals.collectAsState()
     val isLoading = viewModel.mealsIsLoading
 
+    LaunchedEffect(navController.currentBackStackEntry) {
+        viewModel.loadMeals()
+    }
+
     HomeScreenContent(
+        snackbarHost,
         scrollState,
         sheetState,
         coroutineScope,
@@ -138,6 +149,9 @@ fun HomeScreen(
         meals = meals,
         isLoading = isLoading,
 
+        onViewMealClick = { meal ->
+            navController.navigate("view_meal/${meal.mealId}")
+        },
         onAddNewMealClick = { onAddNewMealClick() }
     )
 }
@@ -145,6 +159,7 @@ fun HomeScreen(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun HomeScreenContent(
+    snackbarHost: SnackbarHostState,
     scrollState: LazyListState,
     sheetState: SheetState,
     coroutineScope: CoroutineScope,
@@ -160,6 +175,7 @@ fun HomeScreenContent(
     meals: List<Meal>,
     isLoading: Boolean,
 
+    onViewMealClick: (Meal) -> Unit,
     onAddNewMealClick: () -> Unit,
 ){
     if (showBottomSheet.value) {
@@ -177,6 +193,7 @@ fun HomeScreenContent(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHost) },
         topBar = {
             TopAppBar(
                 title = { Text("Nomly Meal Tracker") },
@@ -324,7 +341,12 @@ fun HomeScreenContent(
                 // Perfect case, show user meals
                 if (!isLoading && meals.isNotEmpty()) {
                     items(meals) { meal ->
-                        MealCard(meal)
+                        MealCard(
+                            meal,
+                            onClick = {
+                                onViewMealClick(meal)
+                            }
+                        )
                     }
                 }
             }
@@ -343,14 +365,15 @@ fun MealCardPreview(){
                 title = "Grilled Chicken Salad",
                 description = "Grilled chicken breast with mixed greens, cherry tomatoes, cucumbers, and olive oil dressing.",
                 type = MealType.LUNCH,
-                calories = 450,
-                protein = 35,
-                carbs = 10,
-                fats = 20,
+                calories = 450.0,
+                protein = 35.0,
+                carbs = 10.0,
+                fats = 20.0,
                 portionSize = "1 plate",
                 imageUrl = "https://example.com/images/chicken_salad.jpg",
                 id = "meal2"
-            )
+            ),
+            onClick = {}
         )
     }
 }

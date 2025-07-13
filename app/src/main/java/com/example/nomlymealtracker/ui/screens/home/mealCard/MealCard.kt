@@ -1,5 +1,6 @@
 package com.example.nomlymealtracker.ui.screens.home.mealCard
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,24 +38,31 @@ fun MealCardPreview(){
                 title = "Grilled Chicken Salad",
                 description = "Grilled chicken breast with mixed greens, cherry tomatoes, cucumbers, and olive oil dressing.",
                 type = MealType.LUNCH,
-                calories = 450,
-                protein = 35,
-                carbs = 10,
-                fats = 20,
+                calories = 450.0,
+                protein = 35.0,
+                carbs = 10.0,
+                fats = 20.0,
                 portionSize = "1 plate",
                 imageUrl = "https://example.com/images/chicken_salad.jpg",
                 id = "meal2"
-            )
+            ),
+            onClick = {}
         )
     }
 }
 
 // Meal Card Composable
 @Composable
-fun MealCard(meal: Meal){
+fun MealCard(
+    meal: Meal,
+    onClick: () -> Unit
+){
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable(
+                onClick = onClick
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.onPrimary
@@ -122,7 +130,7 @@ fun MealCard(meal: Meal){
                         tonalElevation = 2.dp
                     ) {
                         Text(
-                            text = "Protein ${meal.protein}",
+                            text = "Protein ${meal.protein}g",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary
@@ -137,7 +145,7 @@ fun MealCard(meal: Meal){
                         tonalElevation = 2.dp
                     ) {
                         Text(
-                            text = "Carbs ${meal.carbs}",
+                            text = "Carbs ${meal.carbs}g",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary
@@ -152,7 +160,7 @@ fun MealCard(meal: Meal){
                         tonalElevation = 2.dp
                     ) {
                         Text(
-                            text = "Fats ${meal.fats}",
+                            text = "Fats ${meal.fats}g",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary

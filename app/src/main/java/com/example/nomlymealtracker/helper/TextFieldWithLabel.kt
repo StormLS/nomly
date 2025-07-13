@@ -3,12 +3,14 @@ package com.example.nomlymealtracker.helper
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,7 +35,8 @@ fun TextFieldWithLabel(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
     val visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
     Text(text = label, style = MaterialTheme.typography.labelLarge)
@@ -45,6 +48,9 @@ fun TextFieldWithLabel(
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
         visualTransformation = visualTransformation,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = keyboardType
+        ),
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = MidOrange,
             focusedContainerColor = MidOrange

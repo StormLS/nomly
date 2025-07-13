@@ -27,7 +27,7 @@ class HomeViewModel(
         loadMeals()
     }
 
-    private fun loadMeals() {
+    fun loadMeals() {
         viewModelScope.launch {
             try {
                 mealsIsLoading = true
@@ -38,5 +38,9 @@ class HomeViewModel(
                 mealsIsLoading = false
             }
         }
+    }
+
+    fun getMealById(mealId: String): Meal? {
+        return _meals.value.firstOrNull { it.id == mealId }
     }
 }

@@ -3,13 +3,16 @@ package com.example.nomlymealtracker.ui.navigation
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.nomlymealtracker.ui.screens.addMeal.AddMealScreen
 import com.example.nomlymealtracker.ui.screens.auth.ForgotPasswordScreen
 import com.example.nomlymealtracker.ui.screens.auth.LoginScreen
 import com.example.nomlymealtracker.ui.screens.auth.RegisterScreen
 import com.example.nomlymealtracker.ui.screens.home.HomeScreen
+import com.example.nomlymealtracker.ui.screens.viewMeal.ViewMealScreen
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -72,9 +75,26 @@ fun NavGraph(
 
         composable(Screen.AddMeal.route){
             AddMealScreen(
-                navController = navController,
                 snackbarHost = snackbarHostState,
                 coroutineScope = scope,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            Screen.ViewMeal.route + "/{mealId}",
+            arguments = listOf(navArgument("mealId") { type = NavType.StringType })
+        ){ backStackEntry ->
+            val mealId = backStackEntry.arguments?.getString("mealId") ?: return@composable
+            ViewMealScreen(
+                mealId = mealId,
+                snackbarHost = snackbarHostState,
+                coroutineScope = scope,
+                onBackClick = {
+                    navController.popBackStack()
+                }
             )
         }
     }

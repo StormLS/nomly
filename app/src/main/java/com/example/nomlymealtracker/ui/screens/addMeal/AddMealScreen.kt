@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -34,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,19 +53,42 @@ import kotlinx.coroutines.launch
 @Composable
 fun AddMealScreenPreview() {
     NomlyMealTrackerTheme {
-        AddMealScreen(
-            navController = NavController(LocalContext.current),
+        AddMealScreenContent(
             snackbarHost = SnackbarHostState(),
-            coroutineScope = rememberCoroutineScope()
+
+            title = "",
+            description = "",
+            timeOfConsumption = "",
+            selectedMealType = MealType.BREAKFAST,
+            portionSize = "",
+            protein = "",
+            carbs = "",
+            fats = "",
+            calories = "",
+
+            onTitleChange = {},
+            onDescriptionChange = {},
+            onTimeOfConsumptionChange = {},
+            onSelectedMealTypeChange = {},
+            onPortionSizeChange = {},
+            onProteinChange = {},
+            onCarbsChange = {},
+            onFatsChange = {},
+            onCaloriesChange = {},
+
+            onSubmitClick = {},
+            onBackClick = {},
+
+            isSubmitting = false
         )
     }
 }
 
 @Composable
 fun AddMealScreen(
-    navController: NavController,
     snackbarHost: SnackbarHostState,
     coroutineScope: CoroutineScope,
+    onBackClick: () -> Unit,
     viewModel: AddMealViewModel = viewModel(),
 ) {
     val title = viewModel.title
@@ -84,18 +109,19 @@ fun AddMealScreen(
     LaunchedEffect(successMessage, errorMessage) {
         errorMessage?.let {
             coroutineScope.launch {
+                viewModel.errorMessage = null
                 snackbarHost.showSnackbar(it, duration = SnackbarDuration.Short)
             }
         }
         successMessage?.let {
-            coroutineScope.launch {
-                //viewModel.clearRegisterSuccess()
-                snackbarHost.showSnackbar(it, duration = SnackbarDuration.Long)
-            }
+            onBackClick()
+            snackbarHost.showSnackbar(it, duration = SnackbarDuration.Long)
         }
     }
 
     AddMealScreenContent(
+        snackbarHost = snackbarHost,
+
         title = title,
         description = description,
         timeOfConsumption = timeOfConsumption,
@@ -106,11 +132,6 @@ fun AddMealScreen(
         fats = fats,
         calories = calories,
 
-        navController = navController,
-        snackbarHost = snackbarHost,
-        viewModel = viewModel,
-        coroutineScope = coroutineScope,
-
         onTitleChange = { viewModel.title = it },
         onDescriptionChange = { viewModel.description = it },
         onTimeOfConsumptionChange = { viewModel.timeOfConsumption = it },
@@ -120,12 +141,19 @@ fun AddMealScreen(
         onCarbsChange = { viewModel.carbs = it },
         onFatsChange = { viewModel.fats = it },
         onCaloriesChange = { viewModel.calories = it },
+
+        onSubmitClick = { viewModel.submitMeal() },
+        onBackClick = { onBackClick() },
+
+        isSubmitting = isSubmitting
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMealScreenContent(
+    snackbarHost: SnackbarHostState,
+
     title: String,
     description: String,
     timeOfConsumption: String,
@@ -136,11 +164,6 @@ fun AddMealScreenContent(
     fats: String,
     calories: String,
 
-    navController: NavController,
-    snackbarHost: SnackbarHostState,
-    viewModel: AddMealViewModel = viewModel(),
-    coroutineScope: CoroutineScope,
-
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onTimeOfConsumptionChange: (String) -> Unit,
@@ -150,13 +173,21 @@ fun AddMealScreenContent(
     onCarbsChange: (String) -> Unit,
     onFatsChange: (String) -> Unit,
     onCaloriesChange: (String) -> Unit,
+
+    onSubmitClick: () -> Unit,
+    onBackClick: () -> Unit,
+
+    isSubmitting: Boolean
 ){
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHost) },
         topBar = {
             TopAppBar(
                 title = { Text("Add Meal") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = onBackClick
+                    ) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -202,7 +233,7 @@ fun AddMealScreenContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(text = "Meal Type", style = MaterialTheme.typography.labelLarge)
-            ExposedDropdownMenu(viewModel.selectedMealType, onSelectedMealTypeChange)
+            ExposedDropdownMenu(selectedMealType, onSelectedMealTypeChange)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -211,43 +242,28 @@ fun AddMealScreenContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(text = "Macronutrients (Optional)", style = MaterialTheme.typography.labelLarge)
-            TextFieldWithLabel("Protein (g)", protein, onProteinChange, isPassword = false)
+            TextFieldWithLabel("Protein (g)", protein, onProteinChange, isPassword = false, keyboardType = KeyboardType.Number)
             Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Carbs (g)", carbs, onCarbsChange, isPassword = false)
+            TextFieldWithLabel("Carbs (g)", carbs, onCarbsChange, isPassword = false, keyboardType = KeyboardType.Number)
             Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Fats (g)", fats, onFatsChange, isPassword = false)
+            TextFieldWithLabel("Fats (g)", fats, onFatsChange, isPassword = false, keyboardType = KeyboardType.Number)
             Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Calories", calories, onCaloriesChange, isPassword = false)
+            TextFieldWithLabel("Calories", calories, onCaloriesChange, isPassword = false, keyboardType = KeyboardType.Number)
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
-                    coroutineScope.launch {
-                        viewModel.submitMeal(
-                            onSuccess = {
-                                coroutineScope.launch {
-                                    //viewModel.clearRegisterError()
-                                    snackbarHost.showSnackbar("Add a new Item Successfully")
-                                    navController.popBackStack()
-                                }
-                            },
-                            onError = {
-                                coroutineScope.launch {
-                                    snackbarHost.showSnackbar("Error: $it")
-                                }
-
-                            }
-                        )
-                    }
+                    println("Just clicked button to submit meal")
+                    onSubmitClick()
                 },
-                enabled = !viewModel.isSubmitting,
+                enabled = !isSubmitting,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                if (viewModel.isSubmitting) {
+                if (isSubmitting) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -261,7 +277,7 @@ fun AddMealScreenContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedButton(
-                onClick = { navController.popBackStack() },
+                onClick = onBackClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
