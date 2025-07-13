@@ -12,6 +12,9 @@ import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 
 class MainActivity : ComponentActivity()
 {
+
+    // Main Activity of the application and its entry point
+    // Where I've declared my snackBarHost, scope and navController for the application
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

@@ -22,7 +22,6 @@ fun NavGraph(
     scope: CoroutineScope)
 {
     NavHost(navController = navController, startDestination = Screen.Login.route){
-
         composable(Screen.Login.route) {
             LoginScreen(
                 snackbarHost = snackbarHostState,
@@ -65,11 +64,11 @@ fun NavGraph(
                 onAddNewMealClick = {
                     navController.navigate(Screen.AddMeal.route)
                 },
-//                onLogout = {
-//                    navController.navigate(Screen.Login.route) {
-//                        popUpTo(0) // clears back stack
-//                    }
-//                }
+                onLogoutClick = {
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                }
             )
         }
 

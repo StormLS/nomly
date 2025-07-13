@@ -2,25 +2,25 @@ package com.example.nomlymealtracker.data.repository
 
 import com.example.nomlymealtracker.data.models.Meal
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class ViewMealRepository {
     private val db = FirebaseFirestore.getInstance()
 
-    fun getMealById(mealId: String): Flow<Meal?> = callbackFlow {
-        val listener = db.collection("meals")
-            .document(mealId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                val meal = snapshot?.toObject(Meal::class.java)
-                trySend(meal)
-            }
+    // Function used to fetch a single meal from  Firebase's Firestore database
+    suspend fun getMealById(mealId: String): Meal? = withContext(Dispatchers.IO) {
+        try {
+            val snapshot = db.collection("meals")
+                .document(mealId)
+                .get()
+                .await()
 
-        awaitClose { listener.remove() }
+            snapshot.toObject(Meal::class.java)?.copy(mealId = snapshot.id)
+        } catch (e: Exception) {
+            println("FirebaseFetch - Error getting meal - $e")
+            null
+        }
     }
 }

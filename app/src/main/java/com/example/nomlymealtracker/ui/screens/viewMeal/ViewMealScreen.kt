@@ -62,6 +62,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -70,8 +71,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.models.MealType
+import com.example.nomlymealtracker.helper.Helper
+import com.example.nomlymealtracker.helper.Helper.shareMeal
 import com.example.nomlymealtracker.ui.screens.home.HomeViewModel
 import com.example.nomlymealtracker.ui.screens.home.mealCard.MealCard
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineScope
 
 // Preview for the ViewMealScreen
@@ -84,7 +88,7 @@ fun ViewMealScreenContentPreview(){
 
             title = "Double Cheese Burger",
             description = "A really long explanation of this burger and what its made of. Surprice, its mostly beef and some onions. Yum",
-            timeOfConsumption = "14:22pm",
+            timeOfConsumption = Timestamp.now(),
             selectedMealType = MealType.BREAKFAST,
             portionSize = "1x",
             protein = "60",
@@ -92,6 +96,7 @@ fun ViewMealScreenContentPreview(){
             fats = "12",
             calories = "387",
 
+            onShareClick = {},
             onBackClick = {}
         )
     }
@@ -108,22 +113,25 @@ fun ViewMealScreen(
 
     viewModel: ViewMealViewModel = viewModel()
 ){
-    println("Meal Id = $mealId")
+    // Screen opens and the meal item in context loads
+    val meal by viewModel.meal.collectAsState()
+    LaunchedEffect(mealId) {
+        viewModel.getMeal(mealId)
+    }
 
-    val meal by viewModel.getMeal(mealId).collectAsState(initial = null)
+    val context = LocalContext.current
 
+    // A box used to have a loader visible while the item loads
     Box(modifier = Modifier.fillMaxSize()) {
         if (meal == null) {
-            // Centered loader
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else {
-            // Your content
             ViewMealScreenContent(
                 snackbarHost = snackbarHost,
 
                 title = meal!!.title,
                 description = meal!!.description,
-                timeOfConsumption = meal!!.timestamp.toDate().toString(),
+                timeOfConsumption = meal!!.timestamp,
                 selectedMealType = meal!!.type,
                 portionSize = meal!!.portionSize,
                 protein = meal!!.protein?.toString(),
@@ -131,6 +139,7 @@ fun ViewMealScreen(
                 fats = meal!!.fats?.toString(),
                 calories = meal!!.calories?.toString(),
 
+                onShareClick = { meal?.let { shareMeal(context, it) } },
                 onBackClick = onBackClick
             )
         }
@@ -145,7 +154,7 @@ fun ViewMealScreenContent(
 
     title: String,
     description: String,
-    timeOfConsumption: String,
+    timeOfConsumption: Timestamp,
     selectedMealType: MealType,
     portionSize: String,
     protein: String?,
@@ -153,6 +162,7 @@ fun ViewMealScreenContent(
     fats: String?,
     calories: String?,
 
+    onShareClick: () -> Unit,
     onBackClick: () -> Unit,
 ){
     Scaffold(
@@ -166,9 +176,7 @@ fun ViewMealScreenContent(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        // TODO: Handle share action
-                    }) {
+                    IconButton(onClick = onShareClick) {
                         Icon(Icons.Default.Share, contentDescription = "Share")
                     }
                 }
@@ -205,13 +213,17 @@ fun ViewMealScreenContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(title, style = MaterialTheme.typography.titleLarge)
+            Text(
+                title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
             Text(description, style = MaterialTheme.typography.bodyLarge)
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text("Time Eaten", style = MaterialTheme.typography.titleLarge)
-            Text(timeOfConsumption, style = MaterialTheme.typography.bodyLarge)
+            Text(Helper.formatTimestamp(timeOfConsumption) , style = MaterialTheme.typography.bodyLarge)
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -248,7 +260,8 @@ fun MacronutrientRow(label: String, value: String?) {
         )
         Text(
             text = value ?: "-",
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }

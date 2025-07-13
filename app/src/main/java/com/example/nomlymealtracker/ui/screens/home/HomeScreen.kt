@@ -1,5 +1,6 @@
 package com.example.nomlymealtracker.ui.screens.home
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,12 +24,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
@@ -48,6 +52,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,6 +60,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -64,6 +71,7 @@ import androidx.navigation.NavController
 import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.models.MealType
 import com.example.nomlymealtracker.ui.screens.home.mealCard.MealCard
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 
 // --- DUMMY DATA AND TYPES FOR A DASHBOARD BUILD
@@ -78,6 +86,7 @@ fun HomeScreenContentPreview(){
     val dummySelectedMealTypes = remember { mutableStateListOf<String>() }
     val dummySelectedMacros = remember { mutableStateListOf<String>() }
     val dummyShowBottomSheet = remember { mutableStateOf(false) }
+    val dummyLogout = remember { mutableStateOf(false) }
 
     NomlyMealTrackerTheme() {
         HomeScreenContent(
@@ -87,6 +96,7 @@ fun HomeScreenContentPreview(){
 
             selectedMealTypes = dummySelectedMealTypes,
             selectedMacros = dummySelectedMacros,
+            showLogoutDialog = dummyLogout,
             showBottomSheet = dummyShowBottomSheet,
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
 
@@ -99,6 +109,7 @@ fun HomeScreenContentPreview(){
             )),
             isLoading = false,
 
+            onLogoutClick = {},
             onViewMealClick = {},
             onAddNewMealClick = {}
         )
@@ -111,11 +122,13 @@ fun HomeScreen(
     navController: NavController,
     snackbarHost: SnackbarHostState,
     coroutineScope: CoroutineScope,
+    onLogoutClick: () -> Unit,
     onAddNewMealClick: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
     println("Opening HomeScreen")
 
+    val showLogoutDialog = remember { mutableStateOf(false) }
     val scrollState = rememberLazyListState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val showBottomSheet = remember { mutableStateOf(false) }
@@ -141,6 +154,7 @@ fun HomeScreen(
         selectedMealTypes,
         selectedMacros,
 
+        showLogoutDialog,
         showBottomSheet,
 
         searchText,
@@ -149,6 +163,7 @@ fun HomeScreen(
         meals = meals,
         isLoading = isLoading,
 
+        onLogoutClick = onLogoutClick,
         onViewMealClick = { meal ->
             navController.navigate("view_meal/${meal.mealId}")
         },
@@ -167,6 +182,7 @@ fun HomeScreenContent(
     selectedMealTypes: MutableList<String>,
     selectedMacros: MutableList<String>,
 
+    showLogoutDialog: MutableState<Boolean>,
     showBottomSheet: MutableState<Boolean>,
 
     searchText: String,
@@ -175,6 +191,7 @@ fun HomeScreenContent(
     meals: List<Meal>,
     isLoading: Boolean,
 
+    onLogoutClick: () -> Unit,
     onViewMealClick: (Meal) -> Unit,
     onAddNewMealClick: () -> Unit,
 ){
@@ -192,16 +209,49 @@ fun HomeScreenContent(
         }
     }
 
+    val context = LocalContext.current
+    if (showLogoutDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog.value = false },
+            title = { Text("Confirm Logout") },
+            text = { Text("Are you sure you want to log out and return to the login screen?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog.value = false
+                        FirebaseAuth.getInstance().signOut()
+                        onLogoutClick()
+                    }
+                ) {
+                    Text("Logout")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog.value = false}) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHost) },
         topBar = {
             TopAppBar(
                 title = { Text("Nomly Meal Tracker") },
                 navigationIcon = {
-                    IconButton(onClick = {
-
-                    }) {
-                        Icon(Icons.Default.Close, contentDescription = "Back")
+                    IconButton(
+                        onClick = {
+                            showLogoutDialog.value = true
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.ExitToApp,
+                            contentDescription = "Logout",
+                            modifier = Modifier.graphicsLayer {
+                                scaleX = -1f
+                            }
+                        )
                     }
                 }
             )
@@ -272,7 +322,11 @@ fun HomeScreenContent(
                                 selectedMealTypes.add(type)
                         },
                         label = { Text(type) },
-                        modifier = Modifier.height(36.dp)
+                        modifier = Modifier.height(36.dp),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        )
                     )
                 }
 
@@ -295,7 +349,11 @@ fun HomeScreenContent(
                                 selectedMacros.add(macro)
                         },
                         label = { Text(macro) },
-                        modifier = Modifier.height(36.dp)
+                        modifier = Modifier.height(36.dp),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        )
                     )
                 }
             }
