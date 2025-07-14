@@ -53,6 +53,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,7 +69,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 
 // --- DUMMY DATA AND TYPES FOR A DASHBOARD BUILD
-private val mealTypes = listOf("Breakfast", "Lunch", "Dinner")
+private val mealTypes = listOf(MealType.BREAKFAST, MealType.LUNCH, MealType.DINNER)
 private val macroTypes = listOf("Protein", "Carbs", "Fats")
 // --- DUMMY DATA AND TYPES FOR A DASHBOARD BUILD
 
@@ -76,7 +77,7 @@ private val macroTypes = listOf("Protein", "Carbs", "Fats")
 @Preview
 @Composable
 fun HomeScreenContentPreview(){
-    val dummySelectedMealTypes = remember { mutableStateListOf<String>() }
+    val dummySelectedMealTypes = remember { mutableStateListOf<MealType>() }
     val dummySelectedMacros = remember { mutableStateListOf<String>() }
     val dummyShowBottomSheet = remember { mutableStateOf(false) }
     val dummyLogout = remember { mutableStateOf(false) }
@@ -126,13 +127,36 @@ fun HomeScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val showBottomSheet = remember { mutableStateOf(false) }
 
-    val selectedMealTypes = remember { mutableStateListOf<String>() }
-    val selectedMacros = remember { mutableStateListOf<String>() }
-
     val searchText = viewModel.searchTerm
 
     val meals by viewModel.meals.collectAsState()
     val isLoading = viewModel.mealsIsLoading
+
+    // Meal filtering
+    val selectedMealTypes = remember { mutableStateListOf<MealType>() }
+    val selectedMacros = remember { mutableStateListOf<String>() }
+
+    val filteredMeals by remember(meals, searchText,selectedMealTypes, selectedMacros) {
+        derivedStateOf {
+            meals.filter { meal ->
+                //searchText.isBlank() || meal.title.contains(searchText.trim(), ignoreCase = true)
+
+                val matchesSearch = searchText.isBlank() || meal.title.contains(searchText.trim(), ignoreCase = true)
+                val matchesMealType = selectedMealTypes.isEmpty() || selectedMealTypes.contains(meal.type)
+                val matchesMacros = selectedMacros.isEmpty() || selectedMacros.any { macro ->
+                    when (macro.lowercase()) {
+                        "protein" -> (meal.protein ?: 0.0) > 0.0
+                        "carbs" -> (meal.carbs ?: 0.0) > 0.0
+                        "fats" -> (meal.fats ?: 0.0) > 0.0
+                        else -> false
+                    }
+                }
+
+                matchesSearch && matchesMealType && matchesMacros
+            }
+        }
+    }
+    // Meal Filtering
 
     LaunchedEffect(navController.currentBackStackEntry) {
         viewModel.loadMeals()
@@ -153,7 +177,7 @@ fun HomeScreen(
         searchText,
         onSearchTermChange = { viewModel.searchTerm = it },
 
-        meals = meals,
+        meals = filteredMeals,
         isLoading = isLoading,
 
         onLogoutClick = onLogoutClick,
@@ -172,7 +196,7 @@ fun HomeScreenContent(
     sheetState: SheetState,
     coroutineScope: CoroutineScope,
 
-    selectedMealTypes: MutableList<String>,
+    selectedMealTypes: MutableList<MealType>,
     selectedMacros: MutableList<String>,
 
     showLogoutDialog: MutableState<Boolean>,
@@ -313,7 +337,7 @@ fun HomeScreenContent(
                             else
                                 selectedMealTypes.add(type)
                         },
-                        label = { Text(type) },
+                        label = { Text(type.displayName) },
                         modifier = Modifier.height(36.dp),
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
