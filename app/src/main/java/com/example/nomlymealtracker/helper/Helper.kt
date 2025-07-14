@@ -59,6 +59,7 @@ object Helper
         context.startActivity(chooser)
     }
 
+    // To encode an image from to a Base6 to be sent to firebase
     fun encodeImageToBase64(uri: Uri, context: Context): String {
         val inputStream = context.contentResolver.openInputStream(uri) ?: throw IllegalArgumentException("Can't open input stream for URI")
 
@@ -72,6 +73,7 @@ object Helper
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }
 
+    // To go from a Bast64 to a ImageBitmap
     fun decodeBase64ToImageBitmap(base64String: String): ImageBitmap? {
         return try {
             val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
