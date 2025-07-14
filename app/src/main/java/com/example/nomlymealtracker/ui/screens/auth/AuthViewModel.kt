@@ -30,7 +30,7 @@ class AuthViewModel(
     }
 
     fun login() {
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
             errorMessage = "Please enter a valid email address"
             return
         }

@@ -304,21 +304,21 @@ fun HomeScreenContent(
                     shape = RoundedCornerShape(12.dp)
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                IconButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            showBottomSheet.value = true
-                            sheetState.show()
-                        }
-                    }
-                ) {
-                    Icon(
-                        Icons.Default.List,
-                        contentDescription = "Filter"
-                    )
-                }
+//                Spacer(modifier = Modifier.width(8.dp))
+//
+//                IconButton(
+//                    onClick = {
+//                        coroutineScope.launch {
+//                            showBottomSheet.value = true
+//                            sheetState.show()
+//                        }
+//                    }
+//                ) {
+//                    Icon(
+//                        Icons.Default.List,
+//                        contentDescription = "Filter"
+//                    )
+//                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
