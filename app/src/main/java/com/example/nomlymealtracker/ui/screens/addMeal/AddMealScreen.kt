@@ -56,6 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.nomlymealtracker.data.models.MealType
 import com.example.nomlymealtracker.helper.ExposedDropdownMenu
+import com.example.nomlymealtracker.helper.ImagePickerManager
 import com.example.nomlymealtracker.helper.ImageSourceDialog
 import com.example.nomlymealtracker.helper.TextFieldWithLabel
 import com.example.nomlymealtracker.ui.theme.LightOrange
@@ -129,60 +130,28 @@ fun AddMealScreen(
 
     val isSubmitting = viewModel.isSubmitting
 
-    // Camera and Gallery options
+    // --- Camera and Gallery options
     val context = LocalContext.current
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
-
+    val imagePickerManager = remember { ImagePickerManager(context, cameraPermissionState) { viewModel.imageUri = it } }
     val selectedImageUri = viewModel.imageUri
-    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
-
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        println("Gallery URI = $uri")
-        uri?.let { viewModel.imageUri = it }
-    }
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success && cameraImageUri != null) {
-            println("Camera URI = $cameraImageUri")
-            viewModel.imageUri = cameraImageUri
-        }
-    }
-    fun createImageUri(): Uri {
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "meal_${System.currentTimeMillis()}.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Nomly")
-        }
-
-        return context.contentResolver.insert(
-            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
-            contentValues
-        ) ?: throw IllegalStateException("Failed to create MediaStore entry")
-    }
-    fun launchCameraWithPermission() {
-        if (cameraPermissionState.status.isGranted) {
-            cameraImageUri = createImageUri()
-            cameraLauncher.launch(cameraImageUri!!)
-        } else {
-            cameraPermissionState.launchPermissionRequest()
-        }
-    }
-    fun launchGallery() {
-        galleryLauncher.launch("image/*")
-    }
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { imagePickerManager.handleGalleryResult(it) }
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { imagePickerManager.handleCameraResult(it) }
     if (showImageSourceDialog) {
         ImageSourceDialog(
             onDismiss = { showImageSourceDialog = false },
             onCameraClick = {
                 showImageSourceDialog = false
-                launchCameraWithPermission()
+                imagePickerManager.launchCamera(cameraLauncher)
             },
             onGalleryClick = {
                 showImageSourceDialog = false
-                launchGallery()
+                imagePickerManager.launchGallery(galleryLauncher)
             }
         )
     }
+    // --- Camera and Gallery options
 
     LaunchedEffect(successMessage, errorMessage) {
         errorMessage?.let {
@@ -223,7 +192,7 @@ fun AddMealScreen(
         onCaloriesChange = { viewModel.calories = it },
 
         onAddImageClick = { showImageSourceDialog = true },
-        onSubmitClick = { viewModel.submitMeal() },
+        onSubmitClick = { viewModel.submitMeal(context) },
         onBackClick = { onBackClick() },
 
         isSubmitting = isSubmitting
@@ -310,7 +279,7 @@ fun AddMealScreenContent(
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                         Text(
-                            text = "Add Image Reference",
+                            text = "Add Image (Optional)",
                             style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.padding(top = 8.dp)
                         )
@@ -338,13 +307,13 @@ fun AddMealScreenContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(text = "Macronutrients (Optional)", style = MaterialTheme.typography.labelLarge)
-            TextFieldWithLabel("Protein (g)", protein, onProteinChange, isPassword = false, keyboardType = KeyboardType.Number)
+            TextFieldWithLabel("Protein (g)", protein, onProteinChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
             Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Carbs (g)", carbs, onCarbsChange, isPassword = false, keyboardType = KeyboardType.Number)
+            TextFieldWithLabel("Carbs (g)", carbs, onCarbsChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
             Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Fats (g)", fats, onFatsChange, isPassword = false, keyboardType = KeyboardType.Number)
+            TextFieldWithLabel("Fats (g)", fats, onFatsChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
             Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Calories", calories, onCaloriesChange, isPassword = false, keyboardType = KeyboardType.Number)
+            TextFieldWithLabel("Calories", calories, onCaloriesChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
 
             Spacer(modifier = Modifier.height(24.dp))
 

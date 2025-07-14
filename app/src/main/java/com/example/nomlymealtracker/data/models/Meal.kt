@@ -11,7 +11,8 @@ data class Meal(
     val carbs: Double? = null,
     val fats: Double? = null,
     val portionSize: String = "",
-    val imageUrl: String? = null,
+    val imageBase64: String? = null,
+    val timeEaten: String = "",
     val timestamp: Timestamp = Timestamp.now(),
     val id: String = "",
     val mealId: String = ""

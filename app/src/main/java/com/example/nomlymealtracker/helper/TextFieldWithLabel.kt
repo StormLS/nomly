@@ -39,7 +39,8 @@ fun TextFieldWithLabel(
     isPassword: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     maxLength: Int? = null,
-    showCharCount: Boolean = false
+    showCharCount: Boolean = false,
+    numericOnly: Boolean = false,
 ) {
     val visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
     Text(text = label, style = MaterialTheme.typography.labelLarge)
@@ -47,7 +48,10 @@ fun TextFieldWithLabel(
     TextField(
         value = value,
         onValueChange = {
-            if (maxLength == null || it.length <= maxLength) {
+            val withinLength = maxLength == null || it.length <= maxLength
+            val isValidNumber = it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d*\$"))
+
+            if (withinLength && (!numericOnly || isValidNumber)) {
                 onValueChange(it)
             }
         },

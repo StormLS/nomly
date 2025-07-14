@@ -43,7 +43,7 @@ fun MealCardPreview(){
                 carbs = 10.0,
                 fats = 20.0,
                 portionSize = "1 plate",
-                imageUrl = "https://example.com/images/chicken_salad.jpg",
+                imageBase64 = "someImageResource",
                 id = "meal2"
             ),
             onClick = {}

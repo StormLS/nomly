@@ -1,15 +1,17 @@
 package com.example.nomlymealtracker.ui.screens.addMeal
 
+import android.app.Application
+import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.models.MealType
 import com.example.nomlymealtracker.data.repository.AddMealRepository
+import com.example.nomlymealtracker.helper.Helper.encodeImageToBase64
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
@@ -36,7 +38,7 @@ class AddMealViewModel(
 
     var isSubmitting by mutableStateOf(false)
 
-    fun submitMeal() {
+    fun submitMeal(context: Context) {
         val error = validateInputs()
         if (error != null) {
             viewModelScope.launch {
@@ -51,20 +53,18 @@ class AddMealViewModel(
             val userId = FirebaseAuth.getInstance().currentUser?.uid
             if (userId == null) {
                 errorMessage = "User not authenticated"
+                isSubmitting = false
                 return
             }
 
             viewModelScope.launch {
-                var imageUrl: String? = null
+                var imageBase64: String? = null
                 if (imageUri != null) {
-                    println("Image: $imageUri")
-                    val uploadResult = addMealRepository.uploadMealImage(userId, imageUri!!)
-                    if (uploadResult.isSuccess) {
-                        imageUrl = uploadResult.getOrNull()
-                    } else {
-                        errorMessage = "Failed to upload image: ${uploadResult.exceptionOrNull()?.message}"
-                        imageUrl = "Image not available at this time"
-                        //return@launch
+                    try {
+                        imageBase64 = encodeImageToBase64(imageUri!!, context = context)
+                    } catch (e: Exception) {
+                        errorMessage = "Image too large or unreadable"
+                        imageBase64 = null
                     }
                 }
 
@@ -77,10 +77,13 @@ class AddMealViewModel(
                     carbs = carbs.toDoubleOrNull(),
                     fats = fats.toDoubleOrNull(),
                     portionSize = portionSize.trim(),
-                    imageUrl = imageUrl,
+                    imageBase64 = imageBase64,
+                    timeEaten = timeOfConsumption.trim(),
                     timestamp = Timestamp.now(),
                     id = userId
                 )
+
+                println("Meal to be added: $meal")
 
                 val result = addMealRepository.submitMeal(meal)
                 if (result.isSuccess) {
@@ -93,9 +96,8 @@ class AddMealViewModel(
                 }
             }
         } catch (e: Exception) {
+            reset()
             errorMessage = "Failed to add the meal - $e"
-        } finally {
-            isSubmitting = false
         }
     }
 

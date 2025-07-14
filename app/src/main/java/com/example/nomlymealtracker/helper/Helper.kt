@@ -2,7 +2,9 @@ package com.example.nomlymealtracker.helper
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.text.format.DateUtils
+import android.util.Base64
 import com.example.nomlymealtracker.data.models.Meal
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -54,4 +56,16 @@ object Helper
         context.startActivity(chooser)
     }
 
+    fun encodeImageToBase64(uri: Uri, context: Context): String {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: throw IllegalArgumentException("Can't open input stream for URI")
+
+        val bytes = inputStream.readBytes()
+        inputStream.close()
+
+        if (bytes.size > 1_000_000) { // Optional: 1 MB size check
+            throw IllegalArgumentException("Image is too large. Max 1MB allowed.")
+        }
+
+        return Base64.encodeToString(bytes, Base64.NO_WRAP)
+    }
 }
