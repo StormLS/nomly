@@ -188,7 +188,7 @@ fun RegisterScreenContent(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Password must be at least 6 characters and contain a mix of letters and numbers.",
+                    text = "Password must be at least 6 characters and include uppercase, lowercase, a number, and a special character.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

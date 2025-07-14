@@ -114,16 +114,16 @@ class AuthViewModel(
         registerIsLoading = false
     }
     fun registerNewAccount() {
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(userEmail).matches()) {
-            registerErrorMessage = "Please enter a valid email address"
+        if (!isValidEmail(userEmail.trim())) {
+            registerErrorMessage = "Please enter a valid email address."
             return
         }
         if (userPassword != userConfirmPassword) {
             registerErrorMessage = "Passwords do not match."
             return
         }
-        if (userPassword.length < 6) {
-            registerErrorMessage = "Password must be at least 6 characters."
+        if (!isStrongPassword(userPassword)) {
+            registerErrorMessage = "Password must be at least 6 characters and include uppercase, lowercase, a number, and a special character."
             return
         }
 
@@ -157,4 +157,12 @@ class AuthViewModel(
         }
     }
 
+    fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    fun isStrongPassword(password: String): Boolean {
+        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#\$%^&*()_+=-]).{6,}\$")
+        return passwordRegex.matches(password)
+    }
 }

@@ -139,8 +139,6 @@ fun HomeScreen(
     val filteredMeals by remember(meals, searchText,selectedMealTypes, selectedMacros) {
         derivedStateOf {
             meals.filter { meal ->
-                //searchText.isBlank() || meal.title.contains(searchText.trim(), ignoreCase = true)
-
                 val matchesSearch = searchText.isBlank() || meal.title.contains(searchText.trim(), ignoreCase = true)
                 val matchesMealType = selectedMealTypes.isEmpty() || selectedMealTypes.contains(meal.type)
                 val matchesMacros = selectedMacros.isEmpty() || selectedMacros.any { macro ->
