@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.models.MealType
 import com.example.nomlymealtracker.data.repository.AddMealRepository
+import com.example.nomlymealtracker.helper.AnalyticsManager
 import com.example.nomlymealtracker.helper.Helper.encodeImageToBase64
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -105,6 +106,7 @@ class AddMealViewModel(
                 val result = addMealRepository.submitMeal(meal)
                 if (result.isSuccess) {
                     val message = result.getOrNull()
+                    AnalyticsManager.logMealTracked(meal.type.name)
                     successMessage = message
                     reset()
                 } else {
