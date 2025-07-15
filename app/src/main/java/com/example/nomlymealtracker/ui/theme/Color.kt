@@ -5,9 +5,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 val Positive = Color(0xFF00C853)
-
 val PureWhite = Color(0xFFFFFFFF)
-
 val BackOrange = Color(0xFFF8F8F4)
 
 val LightOrange = Color(0xFFFFFBF7)
@@ -17,6 +15,7 @@ val DarkOrange = Color(0xFFCC5800)
 val TextBlack = Color(0xFF1C1C1C)
 val TextWhite = Color(0xFFF8F8F8)
 
+/** Future theming options for a LightColorScheme **/
 val LightColorScheme = lightColorScheme(
     primary = Color(0xFF8D4E2C),
     onPrimary = Color(0xFFFFFFFF),
@@ -56,6 +55,7 @@ val LightColorScheme = lightColorScheme(
     scrim = Color(0xFF000000)
 )
 
+/** Future theming options for a DarkColorScheme **/
 val DarkColorScheme = darkColorScheme(
     primary = Color(0xFFFFB693),
     onPrimary = Color(0xFF542104),

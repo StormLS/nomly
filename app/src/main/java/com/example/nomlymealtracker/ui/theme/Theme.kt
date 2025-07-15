@@ -7,6 +7,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+/** Current LightColorScheme for the App **/
 private val NomlyLightColorScheme = lightColorScheme(
     primary = Orange,
     onPrimary = Color.White,
@@ -19,6 +20,7 @@ private val NomlyLightColorScheme = lightColorScheme(
     outline = Orange,
 )
 
+/** Current DarkColorScheme for the App **/
 private val NomlyDarkColorScheme = darkColorScheme(
     primary = Orange,
     onPrimary = Color.Black,
@@ -31,6 +33,11 @@ private val NomlyDarkColorScheme = darkColorScheme(
     outline = Orange,
 )
 
+/**
+ * The Nomly app theme that applies color schemes, typography, and system dark mode support.
+ * @param darkTheme Whether to use the dark color scheme. Defaults to system setting.
+ * @param content The composable content to display within the themed context.
+ */
 @Composable
 fun NomlyMealTrackerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

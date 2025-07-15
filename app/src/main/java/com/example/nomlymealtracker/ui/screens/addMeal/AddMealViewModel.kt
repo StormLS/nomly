@@ -1,6 +1,5 @@
 package com.example.nomlymealtracker.ui.screens.addMeal
 
-import android.app.Application
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.getValue
@@ -16,7 +15,14 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
-// The view model for the Add New Meal screen
+/**
+ * ViewModel responsible for managing the state and business logic for the Add New Meal screen.
+ *
+ * Holds user input fields, validation logic, and submission handling including image encoding
+ * and interaction with the repository for persisting meal data.
+ *
+ * @property addMealRepository Repository instance used to submit meals to backend/storage.
+ */
 class AddMealViewModel(
     private val addMealRepository: AddMealRepository = AddMealRepository()
 ) : ViewModel()
@@ -38,6 +44,17 @@ class AddMealViewModel(
 
     var isSubmitting by mutableStateOf(false)
 
+    /**
+     * Validates the input fields and submits the meal if valid.
+     *
+     * - Validates required fields and length constraints.
+     * - Encodes the selected image to Base64 string if present.
+     * - Builds a [Meal] object with all input fields.
+     * - Uses [addMealRepository] to persist the meal.
+     * - Updates success or error messages accordingly.
+     *
+     * @param context Android Context used for image encoding.
+     */
     fun submitMeal(context: Context) {
         val error = validateInputs()
         if (error != null) {
@@ -101,6 +118,9 @@ class AddMealViewModel(
         }
     }
 
+    /**
+     * Resets all user input fields and UI states to their initial defaults.
+     */
     private fun reset() {
         title = ""
         description = ""
@@ -115,6 +135,11 @@ class AddMealViewModel(
         isSubmitting = false
     }
 
+    /**
+     * Validates user input fields and returns an error message if any validation fails.
+     *
+     * @return Error message string if invalid input found, otherwise null.
+     */
     private fun validateInputs(): String? {
         return when {
             title.trim().isEmpty() -> "Title is required"

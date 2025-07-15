@@ -15,6 +15,13 @@ import com.example.nomlymealtracker.ui.screens.home.HomeScreen
 import com.example.nomlymealtracker.ui.screens.viewMeal.ViewMealScreen
 import kotlinx.coroutines.CoroutineScope
 
+/**
+ * Composable function that defines the navigation graph for the application using [NavHost].
+ * This includes routes for login, registration, password reset, home, add meal, and view meal.
+ * @param navController The [NavHostController] used to navigate between composable screens.
+ * @param snackbarHostState A shared [SnackbarHostState] used to show snackbars from various screens.
+ * @param scope The [CoroutineScope] used to launch suspend functions such as snackbar messages.
+ */
 @Composable
 fun NavGraph(
     navController: NavHostController,

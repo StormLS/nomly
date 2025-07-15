@@ -1,7 +1,6 @@
 package com.example.nomlymealtracker.ui.screens.auth
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,12 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nomlymealtracker.R
-import com.example.nomlymealtracker.ui.theme.BackOrange
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-// Creating a Preview Friendly function for designing the Login Screen
+/**
+ * Creating a Preview Friendly function for designing the Login Screen
+ */
 @Preview()
 @Composable
 fun LoginScreenPreview() {
@@ -46,7 +45,15 @@ fun LoginScreenPreview() {
     }
 }
 
-// The Composable that brings it all together
+/**
+ * Composable function that displays the Login screen and handles user interaction for logging in.
+ * @param snackbarHost The SnackbarHostState used to show snackbars for error messages.
+ * @param scope CoroutineScope for launching coroutines, e.g., to show snackbars.
+ * @param viewModel The AuthViewModel instance managing UI state and login logic.
+ * @param onLoginSuccess Callback invoked when login is successful, typically to navigate to the next screen.
+ * @param onRegisterClick Callback invoked when the user taps the Register button.
+ * @param onForgotPasswordClick Callback invoked when the user taps the Forgot Password button.
+ */
 @Composable
 fun LoginScreen(
     snackbarHost: SnackbarHostState,
@@ -89,7 +96,20 @@ fun LoginScreen(
     )
 }
 
-// The main composable for the Login Screen content
+/**
+ * The main UI content composable for the Login screen.
+ * Displays input fields for email and password, buttons for login, registration, and navigation to forgot password.
+ * Also handles loading state and shows a progress indicator on the login button when loading.
+ * @param email Current text input for the email field.
+ * @param password Current text input for the password field.
+ * @param isLoading Boolean flag indicating whether a login request is in progress.
+ * @param snackbarHost SnackbarHostState to show snackbars (though not directly used here, passed for scaffold).
+ * @param onEmailChange Lambda called when the email input changes.
+ * @param onPasswordChange Lambda called when the password input changes.
+ * @param onForgotPasswordClick Lambda called when the user taps the "Forgot Password?" button.
+ * @param onRegisterClick Lambda called when the user taps the "Register" button.
+ * @param onLoginClick Lambda called when the user taps the "Login" button.
+ */
 @Composable
 fun LoginScreenContent(
     email: String,

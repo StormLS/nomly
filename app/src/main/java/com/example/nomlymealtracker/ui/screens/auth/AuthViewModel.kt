@@ -1,6 +1,5 @@
 package com.example.nomlymealtracker.ui.screens.auth
 
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,6 +12,12 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel responsible for handling authentication-related logic:
+ * - Login
+ * - Password reset
+ * - Account registration
+ */
 class AuthViewModel(
     private val authRepository: AuthRepository = AuthRepository()
 ) : ViewModel() {
@@ -24,11 +29,12 @@ class AuthViewModel(
     var errorMessage by mutableStateOf<String?>(null)
     var loginSuccess by mutableStateOf(false)
     fun clearLoginError() {
-        //email = ""
-        //password = ""
         errorMessage = null
     }
 
+    /**
+     * Validates the input and initiates a login request.
+     */
     fun login() {
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
             errorMessage = "Please enter a valid email address"
@@ -66,6 +72,9 @@ class AuthViewModel(
         resetSuccess = null
     }
 
+    /**
+     * Sends a password reset email if the input is valid.
+     */
     fun sendPasswordResetEmail() {
         resetErrorMessage = null
         resetSuccess = null
@@ -113,6 +122,11 @@ class AuthViewModel(
         registerErrorMessage = null
         registerIsLoading = false
     }
+
+    /**
+     * Validates input fields and registers a new user.
+     * Also creates an entry in Firestore with the user details.
+     */
     fun registerNewAccount() {
         if (!isValidEmail(userEmail.trim())) {
             registerErrorMessage = "Please enter a valid email address."
@@ -157,10 +171,21 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Checks if an email is valid using Android's built-in pattern.
+     */
     fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
+    /**
+     * Validates password strength using a regex that checks for:
+     * - at least one lowercase letter
+     * - at least one uppercase letter
+     * - at least one digit
+     * - at least one special character
+     * - minimum of 6 characters
+     */
     fun isStrongPassword(password: String): Boolean {
         val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#\$%^&*()_+=-]).{6,}\$")
         return passwordRegex.matches(password)

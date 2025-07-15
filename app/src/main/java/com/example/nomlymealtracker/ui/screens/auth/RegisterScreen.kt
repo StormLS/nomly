@@ -23,7 +23,9 @@ import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-// Creating a Preview Friendly function for designing the Forgot Password Screen
+/**
+ * Creating a Preview Friendly function for designing the Forgot Password Screen
+ */
 @Preview
 @Composable
 fun RegisterScreenPreview() {
@@ -47,7 +49,13 @@ fun RegisterScreenPreview() {
     }
 }
 
-// The Composable that brings it all together
+/**
+ * Composable function that displays the Register screen and handles user registration flow.
+ * @param navController Navigation controller used to navigate between screens.
+ * @param snackbarHost SnackbarHostState used to display error or success messages.
+ * @param coroutineScope CoroutineScope used to launch coroutines for snackbar display.
+ * @param viewModel AuthViewModel that manages registration UI state and business logic.
+ */
 @Composable
 fun RegisterScreen(
     navController: NavController,
@@ -97,7 +105,23 @@ fun RegisterScreen(
     )
 }
 
-// The main composable for the Register Screen content
+/**
+ * The main composable for displaying the registration screen UI.
+ * This composable provides input fields for account name, email, password, and password confirmation, along with Register and Back buttons.
+ * It also displays a loading indicator during registration and shows snackbars for messages via the provided [snackbarHost].
+ * @param name The current value of the user's account name input.
+ * @param email The current value of the user's email input.
+ * @param password The current value of the user's password input.
+ * @param confirmPassword The current value of the password confirmation input.
+ * @param isLoading Whether the registration process is in progress.
+ * @param snackbarHost The SnackbarHostState used to display snackbars.
+ * @param onNameChange Callback invoked when the account name input changes.
+ * @param onEmailChange Callback invoked when the email input changes.
+ * @param onPasswordChange Callback invoked when the password input changes.
+ * @param onPasswordConfirmChange Callback invoked when the confirm password input changes.
+ * @param onCreateAccountClick Callback invoked when the Register button is clicked.
+ * @param onBackClick Callback invoked when the Back to Login button is clicked.
+ */
 @Composable
 fun RegisterScreenContent(
     name: String,
@@ -232,5 +256,4 @@ fun RegisterScreenContent(
             }
         }
     }
-
 }

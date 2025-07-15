@@ -2,9 +2,6 @@ package com.example.nomlymealtracker.data.models
 
 import com.google.firebase.Timestamp
 
-
-//
-
 /**
  * Class to represent a User in the App,
  * Currently only using the Full Name, their email and when the account was created

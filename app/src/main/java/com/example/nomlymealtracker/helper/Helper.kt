@@ -13,17 +13,29 @@ import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-// A Helper object where I can put anything I need to help me throughout the app
+/**
+ * A utility object containing reusable helper functions used throughout the app.
+ * Functions include time formatting, meal sharing, and image encoding/decoding.
+ */
 object Helper
 {
-    // A function used to help me convert a Timestamp to a formatted string, in this case "dd MMM yyyy, HH:mm"
+    /**
+     * Formats a [Timestamp] into a string of format `"dd MMM yyyy, HH:mm"`.
+     * Example: `05 Jul 2025, 14:30`
+     * @param timestamp The [Timestamp] to format.
+     * @return A formatted date-time string.
+     */
     fun formatTimestamp(timestamp: Timestamp): String {
         val date = timestamp.toDate()
         val formatter = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
         return formatter.format(date)
     }
 
-    // A function used to help me get a relative time string from a Timestamp
+    /**
+     * Converts a [Timestamp] to a human-readable relative time (e.g., "5 minutes ago").
+     * @param timestamp The [Timestamp] to convert.
+     * @return A relative time string.
+     */
     fun getRelativeTime(timestamp: Timestamp): String {
         val now = System.currentTimeMillis()
         val time = timestamp.toDate().time
@@ -35,7 +47,11 @@ object Helper
         ).toString()
     }
 
-    // A function used to share meal details with someone on another app
+    /**
+     * Shares the details of a [Meal] with other apps via Android's share sheet.
+     * @param context The current [Context].
+     * @param meal The [Meal] to share.
+     */
     fun shareMeal(context: Context, meal: Meal) {
         val shareText = buildString {
             appendLine("Check out this meal!\n")
@@ -59,7 +75,13 @@ object Helper
         context.startActivity(chooser)
     }
 
-    // To encode an image from to a Base6 to be sent to firebase
+    /**
+     * Encodes an image from a [Uri] into a Base64 string for storage in Firestore.
+     * @param uri The [Uri] of the image to encode.
+     * @param context The current [Context] to access the content resolver.
+     * @return A Base64-encoded string representation of the image.
+     * @throws IllegalArgumentException if the input stream is null or if the image is too large.
+     */
     fun encodeImageToBase64(uri: Uri, context: Context): String {
         val inputStream = context.contentResolver.openInputStream(uri) ?: throw IllegalArgumentException("Can't open input stream for URI")
 
@@ -73,7 +95,11 @@ object Helper
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }
 
-    // To go from a Bast64 to a ImageBitmap
+    /**
+     * Decodes a Base64-encoded image string into an [ImageBitmap] for display in Jetpack Compose.
+     * @param base64String The Base64 string to decode.
+     * @return The decoded [ImageBitmap], or `null` if decoding fails.
+     */
     fun decodeBase64ToImageBitmap(base64String: String): ImageBitmap? {
         return try {
             val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)

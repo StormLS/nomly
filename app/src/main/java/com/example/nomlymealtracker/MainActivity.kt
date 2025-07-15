@@ -10,11 +10,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.nomlymealtracker.ui.navigation.NavGraph
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 
+/**
+ * MainActivity serves as the entry point of the Nomly Meal Tracker app.
+ * It sets up the app's theme, navigation, snackbar host, and coroutine scope for global UI logic.
+ */
 class MainActivity : ComponentActivity()
 {
-
-    // Main Activity of the application and its entry point
-    // Where I've declared my snackBarHost, scope and navController for the application
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

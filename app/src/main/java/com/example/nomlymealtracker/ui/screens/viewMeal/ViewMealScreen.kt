@@ -1,6 +1,5 @@
 package com.example.nomlymealtracker.ui.screens.viewMeal
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,19 +45,16 @@ import com.example.nomlymealtracker.helper.Helper.shareMeal
 import com.example.nomlymealtracker.ui.theme.MidOrange
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineScope
-import android.graphics.BitmapFactory
-import android.util.Base64
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.Card
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import coil.compose.rememberAsyncImagePainter
 import com.example.nomlymealtracker.helper.Helper.decodeBase64ToImageBitmap
+import com.example.nomlymealtracker.helper.MacronutrientRow
 
-// Preview for the ViewMealScreen
+/**
+ * Creating a Preview Friendly function for designing the View Meal Screen
+ */
 @Preview
 @Composable
 fun ViewMealScreenContentPreview(){
@@ -84,7 +80,20 @@ fun ViewMealScreenContentPreview(){
     }
 }
 
-// The Main entry composable for the ViewMealScreen
+/**
+ * Composable that displays the detailed view of a single meal identified by [mealId].
+ * Loads the meal data from the provided [ViewMealViewModel], shows a loading indicator
+ * while fetching, and displays the meal details including image, title, description,
+ * time of consumption, macronutrients, and timestamp.
+ *
+ * Provides actions to share the meal and navigate back.
+ *
+ * @param mealId The unique identifier of the meal to display.
+ * @param snackbarHost The [SnackbarHostState] for showing snackbars.
+ * @param coroutineScope The [CoroutineScope] used for launching coroutines.
+ * @param onBackClick Lambda invoked when the back navigation action is triggered.
+ * @param viewModel The [ViewMealViewModel] providing the meal data (defaulted to viewModel()).
+ */
 @Composable
 fun ViewMealScreen(
     mealId: String,
@@ -134,6 +143,16 @@ fun ViewMealScreen(
     }
 }
 
+
+/**
+ * Composable displaying detailed information about a meal.
+ *
+ * Shows the meal image (or placeholder if no image), title, description,
+ * time eaten, meal type, portion size, macronutrients, calories, and
+ * the creation timestamp.
+ *
+ * Includes a top app bar with navigation back and share action buttons.
+ */
 // The ViewMealScreen content
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -267,24 +286,5 @@ fun ViewMealScreenContent(
             Text("Created", style = MaterialTheme.typography.titleMedium)
             Text(Helper.formatTimestamp(timestamp), style = MaterialTheme.typography.bodyLarge)
         }
-    }
-}
-
-@Composable
-fun MacronutrientRow(label: String, value: String?) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleMedium
-        )
-        Text(
-            text = if (value.isNullOrBlank()) "N/A" else "${value}g",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
     }
 }

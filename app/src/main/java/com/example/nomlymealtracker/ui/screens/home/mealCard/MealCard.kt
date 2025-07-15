@@ -29,6 +29,9 @@ import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.models.MealType
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 
+/**
+ * Creating a Preview Friendly function for designing the Meal Card
+ */
 @Preview
 @Composable
 fun MealCardPreview(){
@@ -51,7 +54,15 @@ fun MealCardPreview(){
     }
 }
 
-// Meal Card Composable
+/**
+ * Composable that displays a card representing a Meal.
+ *
+ * Shows the meal title, timestamp, description, and optional macronutrient details.
+ * The entire card is clickable and triggers the provided [onClick] lambda.
+ *
+ * @param meal The [Meal] data object to display.
+ * @param onClick Lambda to be invoked when the card is clicked.
+ */
 @Composable
 fun MealCard(
     meal: Meal,

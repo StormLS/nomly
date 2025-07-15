@@ -19,6 +19,9 @@ import androidx.compose.ui.unit.dp
 import com.example.nomlymealtracker.ui.theme.MidOrange
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 
+/**
+ * Preview for TextFieldWithLabel()
+ */
 @Preview
 @Composable
 fun TextFieldWithLabelPreview(){
@@ -31,6 +34,18 @@ fun TextFieldWithLabelPreview(){
     }
 }
 
+/**
+ * A reusable labeled text field composable with support for password masking,
+ * input type restriction, character limits, and optional character counter.
+ * @param label The text label displayed above the text field.
+ * @param value The current value of the input field.
+ * @param onValueChange Callback triggered when the input value changes.
+ * @param isPassword If true, input is masked (e.g., for passwords).
+ * @param keyboardType The [KeyboardType] used for the input (e.g., text, number, email).
+ * @param maxLength Optional maximum character limit for the input.
+ * @param showCharCount If true, displays the current character count and limit.
+ * @param numericOnly If true, restricts input to numeric values with optional decimals.
+ */
 @Composable
 fun TextFieldWithLabel(
     label: String,

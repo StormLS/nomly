@@ -1,9 +1,7 @@
 package com.example.nomlymealtracker.ui.screens.addMeal
 
 import android.Manifest
-import android.content.ContentValues
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -23,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,7 +33,6 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,11 +59,13 @@ import com.example.nomlymealtracker.ui.theme.LightOrange
 import com.example.nomlymealtracker.ui.theme.MidOrange
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+/**
+ * Creating a Preview Friendly function for designing the Add Meal Screen
+ */
 @Preview
 @Composable
 fun AddMealScreenPreview() {
@@ -106,6 +104,20 @@ fun AddMealScreenPreview() {
     }
 }
 
+/**
+ * Composable screen for adding a new meal entry.
+ * This screen allows the user to input meal details such as title, description,
+ * consumption time, meal type, portion size, macronutrients, calories, and optionally
+ * attach an image from camera or gallery.
+ *
+ * It handles permissions for camera access and manages image picking via
+ * [ImagePickerManager]. Snackbars are shown for errors and success messages.
+ *
+ * @param snackbarHost The [SnackbarHostState] to display snackbars.
+ * @param coroutineScope The [CoroutineScope] used for launching coroutine jobs like showing snackbars.
+ * @param onBackClick Callback invoked when the user requests to navigate back from this screen.
+ * @param viewModel The [AddMealViewModel] providing state and logic for this screen. Defaults to the Compose [viewModel] instance.
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun AddMealScreen(
@@ -199,6 +211,9 @@ fun AddMealScreen(
     )
 }
 
+/**
+ * Composable that displays the UI for adding a meal's details.
+ **/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMealScreenContent(
@@ -353,4 +368,3 @@ fun AddMealScreenContent(
         }
     }
 }
-

@@ -9,25 +9,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.nomlymealtracker.ui.theme.LightOrange
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 import com.example.nomlymealtracker.ui.theme.Orange
-import com.example.nomlymealtracker.ui.theme.Positive
 import com.example.nomlymealtracker.ui.theme.PureWhite
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
-// Creating a Preview Friendly function for designing the Forgot Password Screen
+/**
+ * Creating a Preview Friendly function for designing the Forgot Password Screen
+ */
 @Preview
 @Composable
 fun ForgotPasswordScreenPreview() {
@@ -39,13 +36,20 @@ fun ForgotPasswordScreenPreview() {
             isLoading = false,
             snackbarHost = SnackbarHostState(),
             onResetEmailChange = {},
-            onRestEmailClick = {},
+            onResetEmailClick = {},
             onBackClick = {}
         )
     }
 }
 
-// The Composable that brings it all together
+
+/**
+ * Composable that displays the Forgot Password screen, allowing the user to request a password reset link.
+ * @param navController The NavController used for navigation.
+ * @param snackbarHost The SnackbarHostState to show snackbars for success or error messages.
+ * @param scope A CoroutineScope used to launch snackbar showing coroutines.
+ * @param viewModel The AuthViewModel instance that manages the screen state and business logic.
+ */
 @Composable
 fun ForgotPasswordScreen(
     navController: NavController,
@@ -82,12 +86,21 @@ fun ForgotPasswordScreen(
         isLoading = isLoading,
         snackbarHost = snackbarHost,
         onResetEmailChange = { viewModel.resetEmail = it },
-        onRestEmailClick = { viewModel.sendPasswordResetEmail() },
+        onResetEmailClick = { viewModel.sendPasswordResetEmail() },
         onBackClick = { navController.popBackStack() }
     )
 }
 
-// The main composable for the Forgot Password Screen content
+/**
+ * Main content composable for the Forgot Password screen.
+ * Displays the UI elements including email input, buttons, and handles user interactions.
+ * @param email Current email input value.
+ * @param isLoading Boolean flag indicating if the reset request is in progress.
+ * @param snackbarHost SnackbarHostState for showing snackbars.
+ * @param onResetEmailChange Lambda called when the email input changes.
+ * @param onResetEmailClick Lambda called when the "Send Reset Link" button is clicked.
+ * @param onBackClick Lambda called when the "Back to Login" button is clicked.
+ */
 @Composable
 fun ForgotPasswordScreenContent(
     email: String,
@@ -96,7 +109,7 @@ fun ForgotPasswordScreenContent(
     isLoading: Boolean,
     snackbarHost: SnackbarHostState,
     onResetEmailChange: (String) -> Unit,
-    onRestEmailClick: () -> Unit,
+    onResetEmailClick: () -> Unit,
     onBackClick: () -> Unit
 ){
     Scaffold(
@@ -156,7 +169,7 @@ fun ForgotPasswordScreenContent(
 
                 // Reset Button
                 Button(
-                    onClick = onRestEmailClick,
+                    onClick = onResetEmailClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),

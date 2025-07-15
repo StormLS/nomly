@@ -15,6 +15,11 @@ import androidx.compose.ui.Modifier
 import com.example.nomlymealtracker.data.models.MealType
 import com.example.nomlymealtracker.ui.theme.MidOrange
 
+/**
+ * A composable dropdown menu for selecting a [MealType], using Material 3's ExposedDropdownMenuBox.
+ * @param selectedMealType The currently selected [MealType] that will be shown in the TextField.
+ * @param onMealTypeSelected Callback triggered when a [MealType] is selected from the dropdown.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExposedDropdownMenu(

@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
-import kotlinx.coroutines.launch
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
@@ -68,11 +66,13 @@ import com.example.nomlymealtracker.ui.screens.home.mealCard.MealCard
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 
-// --- DUMMY DATA AND TYPES FOR A DASHBOARD BUILD
+/** Predefined data for meal types and macronutrients **/
 private val mealTypes = listOf(MealType.BREAKFAST, MealType.LUNCH, MealType.DINNER)
 private val macroTypes = listOf("Protein", "Carbs", "Fats")
-// --- DUMMY DATA AND TYPES FOR A DASHBOARD BUILD
 
+/**
+ * Creating a Preview Friendly function for designing the Home Screen
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
@@ -110,6 +110,23 @@ fun HomeScreenContentPreview(){
     }
 }
 
+/**
+ * Composable that displays the main Home screen of the app, showing a list of meals with
+ * search, filtering, and navigation capabilities.
+ *
+ * It manages UI states such as showing logout confirmation
+ * and applies filtering logic on meals based on user-selected meal types, macronutrients, and search text.
+ *
+ * This composable also triggers loading meals from the ViewModel when the screen appears,
+ * and handles navigation to meal detail screens as well as actions like logout and adding new meals.
+ *
+ * @param navController The [NavController] used for screen navigation.
+ * @param snackbarHost The [SnackbarHostState] for displaying snackbar messages.
+ * @param coroutineScope The [CoroutineScope] used for launching coroutines.
+ * @param onLogoutClick Lambda invoked when the user confirms logout.
+ * @param onAddNewMealClick Lambda invoked when the user wants to add a new meal.
+ * @param viewModel The [HomeViewModel] providing meal data and app state, defaulted to the Compose ViewModel.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -427,7 +444,12 @@ fun HomeScreenContent(
 }
 
 
-// Meal Card Preview composable for designing
+/**
+ * Preview composable that displays a sample MealCard for design and UI testing purposes.
+ *
+ * Uses a dummy Meal instance with example data to showcase how the MealCard looks.
+ * This preview is wrapped in the app's theme for accurate styling.
+ */
 @Preview
 @Composable
 fun MealCardPreview(){
@@ -449,4 +471,3 @@ fun MealCardPreview(){
         )
     }
 }
-

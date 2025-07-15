@@ -1,7 +1,5 @@
 package com.example.nomlymealtracker.ui.screens.home
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,7 +11,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-// Home Screen viewModel used to hold the screens data and UI states
+/**
+ * ViewModel responsible for managing the state and data of the Home Screen.
+ *
+ * Holds the list of meals, search term, and loading state.
+ * Fetches meals from the [HomeRepository] and exposes them as a [StateFlow].
+ *
+ * @property homeRepository The repository used to fetch meals data.
+ */
 class HomeViewModel(
     private val homeRepository: HomeRepository = HomeRepository()
 ) : ViewModel() {
