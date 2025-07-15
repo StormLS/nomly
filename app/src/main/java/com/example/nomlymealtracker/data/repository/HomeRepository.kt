@@ -8,13 +8,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
-// Home Repository class that is responsible for doing all of the Firebase Network called to retrieve data, send data, etc
+/**
+ * Repository class responsible for interacting with Firebase Firestore
+ * to retrieve meal data for the authenticated user.
+ * This class handles all network-related operations for the Home screen.
+ * This class abstracts Firestore write operations from the ViewModel, keeping data logic separate from UI logic.
+ */
 class HomeRepository
 {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
-    // Function used to fetch the meals from Firebase's Firestore database
+    /**
+     * Fetches a list of meals from the "meals" Firestore collection,
+     * filtered by the currently authenticated users ID and sorted by most recent.
+     * @return A list of [Meal] objects associated with the current user, sorted by descending timestamp.
+     * If no user is authenticated, an empty list is returned.
+     * In case of an error, the exception is logged and an empty list is returned.
+     */
     suspend fun fetchMeals(): List<Meal> = withContext(Dispatchers.IO)
     {
         val userId = firebaseAuth.currentUser?.uid
