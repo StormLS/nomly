@@ -1,20 +1,30 @@
 package com.example.nomlymealtracker.ui.screens.auth
 
+import androidx.collection.emptyLongSet
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -125,6 +135,7 @@ fun LoginScreenContent(
     onLoginClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHost)
@@ -169,8 +180,18 @@ fun LoginScreenContent(
                     onValueChange = onPasswordChange,
                     label = { Text("Password") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     singleLine = true,
+                    trailingIcon = {
+                        val image = if (passwordVisible)
+                            Icons.Default.VisibilityOff
+                        else
+                            Icons.Default.Visibility
+
+                        IconButton(onClick = {passwordVisible = !passwordVisible}) {
+                            Icon(imageVector = image, contentDescription = if (passwordVisible) "Hide Password" else "Show Password")
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
 
