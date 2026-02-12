@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import okhttp3.Dispatcher
 
 /**
  * Repository class responsible for retrieving a single meal
@@ -31,6 +32,19 @@ class ViewMealRepository {
         } catch (e: Exception) {
             println("FirebaseFetch - Error getting meal - $e")
             null
+        }
+    }
+
+    suspend fun deleteMealById(mealId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            db.collection("meals")
+                .document(mealId)
+                .delete()
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            println("FirebaseFetch - Error deleting meal - $e")
+            Result.failure(e)
         }
     }
 }

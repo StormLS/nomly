@@ -22,11 +22,12 @@ class AddMealRepository {
     suspend fun submitMeal(meal: Meal): Result<String> = withContext(Dispatchers.IO)
     {
         try {
-            db.collection("meals")
-                .add(meal)
-                .await()
+            val docRef = db.collection("meals").document() // generate ID
+            val mealWithId = meal.copy(mealId = docRef.id)
 
-            Result.success("Meal submitted successfully")
+            docRef.set(mealWithId).await()
+
+            Result.success("Meal submitted successfully with docRef of ${docRef.id}")
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.repository.ViewMealRepository
+import com.example.nomlymealtracker.helper.Helper
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 /**
  * ViewModel responsible for fetching and holding the details of a Meal.
@@ -29,6 +32,20 @@ class ViewMealViewModel(
         viewModelScope.launch {
             val result = repository.getMealById(mealId)
             _meal.value = result
+        }
+    }
+
+    fun deleteMeal(mealId: String) {
+        viewModelScope.launch {
+            repository.deleteMealById(mealId)
+                .onSuccess { println("Meal Item Deleted") }
+                .onFailure { e ->
+                    when (e) {
+                        is FirebaseFirestoreException -> println("Firebase Error")
+                        is IOException -> println("IO Error")
+                        else -> println("Generic Error")
+                    }
+                }
         }
     }
 }

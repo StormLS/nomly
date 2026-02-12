@@ -46,9 +46,11 @@ import com.example.nomlymealtracker.ui.theme.MidOrange
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.Image
+import androidx.compose.material3.Button
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.sp
 import com.example.nomlymealtracker.helper.Helper.decodeBase64ToImageBitmap
 import com.example.nomlymealtracker.helper.MacronutrientRow
 
@@ -73,7 +75,7 @@ fun ViewMealScreenContentPreview(){
             fats = "12",
             calories = "387",
             timestamp = Timestamp.now(),
-
+            onDeleteClick = {},
             onShareClick = {},
             onBackClick = {}
         )
@@ -136,6 +138,7 @@ fun ViewMealScreen(
                 calories = meal!!.calories?.toString(),
                 timestamp = meal!!.timestamp,
 
+                onDeleteClick = { meal?.let { viewModel.deleteMeal(it.mealId) }},
                 onShareClick = { meal?.let { shareMeal(context, it) } },
                 onBackClick = onBackClick
             )
@@ -171,6 +174,7 @@ fun ViewMealScreenContent(
     calories: String?,
     timestamp: Timestamp,
 
+    onDeleteClick: () -> Unit,
     onShareClick: () -> Unit,
     onBackClick: () -> Unit,
 ){
@@ -285,6 +289,18 @@ fun ViewMealScreenContent(
 
             Text("Created", style = MaterialTheme.typography.titleMedium)
             Text(Helper.formatTimestamp(timestamp), style = MaterialTheme.typography.bodyLarge)
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(modifier = Modifier.fillMaxSize()) {
+                Button(
+                    onClick = onDeleteClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(30),
+                ) {
+                    Text("Delete Entry", fontSize = 20.sp)
+                }
+            }
         }
     }
 }

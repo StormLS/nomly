@@ -98,7 +98,8 @@ class AddMealViewModel(
                     imageBase64 = imageBase64,
                     timeEaten = timeOfConsumption.trim(),
                     timestamp = Timestamp.now(),
-                    id = userId
+                    id = userId,
+                    mealId = "TEST123"
                 )
 
                 println("Meal to be added: $meal")
