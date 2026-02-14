@@ -56,12 +56,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.nomlymealtracker.data.models.Meal
 import com.example.nomlymealtracker.data.models.MealType
+import com.example.nomlymealtracker.helper.SessionManager
 import com.example.nomlymealtracker.ui.screens.home.mealCard.MealCard
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
@@ -227,6 +229,8 @@ fun HomeScreenContent(
     onViewMealClick: (Meal) -> Unit,
     onAddNewMealClick: () -> Unit,
 ){
+    val context = LocalContext.current
+
     if (showBottomSheet.value) {
         ModalBottomSheet(
             onDismissRequest = { showBottomSheet.value = false },
@@ -250,6 +254,7 @@ fun HomeScreenContent(
                 TextButton(
                     onClick = {
                         showLogoutDialog.value = false
+                        SessionManager.clearSession(context)
                         FirebaseAuth.getInstance().signOut()
                         onLogoutClick()
                     }

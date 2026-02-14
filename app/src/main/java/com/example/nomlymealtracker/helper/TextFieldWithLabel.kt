@@ -1,5 +1,6 @@
 package com.example.nomlymealtracker.helper
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -58,36 +59,38 @@ fun TextFieldWithLabel(
     numericOnly: Boolean = false,
 ) {
     val visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
-    Text(text = label, style = MaterialTheme.typography.labelLarge)
-    Spacer(modifier = Modifier.height(4.dp))
-    TextField(
-        value = value,
-        onValueChange = {
-            val withinLength = maxLength == null || it.length <= maxLength
-            val isValidNumber = it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d*\$"))
+    Column {
+        Text(text = label, style = MaterialTheme.typography.labelLarge)
+        Spacer(modifier = Modifier.height(4.dp))
+        TextField(
+            value = value,
+            onValueChange = {
+                val withinLength = maxLength == null || it.length <= maxLength
+                val isValidNumber = it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d*\$"))
 
-            if (withinLength && (!numericOnly || isValidNumber)) {
-                onValueChange(it)
-            }
-        },
-        placeholder = { Text(label) },
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        visualTransformation = visualTransformation,
-        keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = keyboardType
-        ),
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = MidOrange,
-            focusedContainerColor = MidOrange
+                if (withinLength && (!numericOnly || isValidNumber)) {
+                    onValueChange(it)
+                }
+            },
+            placeholder = { Text(label) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            visualTransformation = visualTransformation,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = keyboardType
+            ),
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = MidOrange,
+                focusedContainerColor = MidOrange
+            )
         )
-    )
 
-    if (showCharCount && maxLength != null) {
-        Text(
-            text = "${value.length}/$maxLength",
-            style = MaterialTheme.typography.bodySmall,
-            color = if (value.length > maxLength) Color.Red else Color.Gray,
-        )
+        if (showCharCount && maxLength != null) {
+            Text(
+                text = "${value.length}/$maxLength",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (value.length > maxLength) Color.Red else Color.Gray,
+            )
+        }
     }
 }

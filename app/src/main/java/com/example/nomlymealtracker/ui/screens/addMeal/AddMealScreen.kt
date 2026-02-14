@@ -7,12 +7,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -21,19 +24,27 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,6 +59,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.nomlymealtracker.data.models.MealType
@@ -55,13 +67,13 @@ import com.example.nomlymealtracker.helper.ExposedDropdownMenu
 import com.example.nomlymealtracker.helper.ImagePickerManager
 import com.example.nomlymealtracker.helper.ImageSourceDialog
 import com.example.nomlymealtracker.helper.TextFieldWithLabel
-import com.example.nomlymealtracker.ui.theme.LightOrange
 import com.example.nomlymealtracker.ui.theme.MidOrange
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 /**
  * Creating a Preview Friendly function for designing the Add Meal Screen
@@ -262,14 +274,74 @@ fun AddMealScreenContent(
             )
         }
     ) { innerPadding ->
+        // Time picker state and dialog
+        val timePickerState = rememberTimePickerState()
+        var showTimePicker by remember { mutableStateOf(false) }
+
+        if (showTimePicker) {
+            Dialog(onDismissRequest = { showTimePicker = false }) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Select Time",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp)
+                        )
+                        TimePicker(state = timePickerState)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            TextButton(onClick = { showTimePicker = false }) {
+                                Text("Cancel")
+                            }
+                            Button(
+                                onClick = {
+                                    val hour = timePickerState.hour
+                                    val minute = timePickerState.minute
+                                    val formattedTime = String.format(
+                                        Locale.getDefault(),
+                                        "%d:%02d %s",
+                                        if (hour % 12 == 0) 12 else hour % 12,
+                                        minute,
+                                        if (hour < 12) "AM" else "PM"
+                                    )
+                                    onTimeOfConsumptionChange(formattedTime)
+                                    showTimePicker = false
+                                },
+                                modifier = Modifier.padding(start = 8.dp)
+                            ) {
+                                Text("Confirm")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(LightOrange)
+                .background(MaterialTheme.colorScheme.onPrimary)
                 .padding(innerPadding)
-                .padding(24.dp)
+                .padding(horizontal = 24.dp)
+                .imePadding()
                 .verticalScroll(rememberScrollState()),
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Image Picker
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -302,41 +374,96 @@ fun AddMealScreenContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            TextFieldWithLabel("Title (100 Characters) *", title, onTitleChange, isPassword = false, maxLength = 100, showCharCount = true)
-            Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Description (300 Characters) *", description, onDescriptionChange, isPassword = false, maxLength = 300, showCharCount = true)
-            Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Time at Consumption *", timeOfConsumption, onTimeOfConsumptionChange, isPassword = false)
+            // Meal Details Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text("Meal Details", style = MaterialTheme.typography.titleLarge)
 
-            Spacer(modifier = Modifier.height(24.dp))
+                    TextFieldWithLabel("Title (100 Characters) *", title, onTitleChange, isPassword = false, maxLength = 100, showCharCount = true)
+                    TextFieldWithLabel("Description (300 Characters) *", description, onDescriptionChange, isPassword = false, maxLength = 300, showCharCount = true)
 
-            Text(text = "Meal Type *", style = MaterialTheme.typography.labelLarge)
-            ExposedDropdownMenu(selectedMealType, onSelectedMealTypeChange)
+                    // Time picker field (read-only, opens dialog on tap)
+                    Column {
+                        Text(text = "Time at Consumption *", style = MaterialTheme.typography.labelLarge)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Box {
+                            TextField(
+                                value = timeOfConsumption,
+                                onValueChange = {},
+                                readOnly = true,
+                                placeholder = { Text("Tap to select time") },
+                                trailingIcon = {
+                                    Icon(
+                                        Icons.Default.Schedule,
+                                        contentDescription = "Select time"
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                colors = TextFieldDefaults.colors(
+                                    unfocusedContainerColor = MidOrange,
+                                    focusedContainerColor = MidOrange
+                                )
+                            )
+                            // Transparent overlay to intercept taps (TextField consumes touch events even when readOnly)
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clickable { showTimePicker = true }
+                            )
+                        }
+                    }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                    Column {
+                        Text(text = "Meal Type *", style = MaterialTheme.typography.labelLarge)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        ExposedDropdownMenu(selectedMealType, onSelectedMealTypeChange)
+                    }
 
-            TextFieldWithLabel("Quantity / Portion Size *", portionSize, onPortionSizeChange, isPassword = false)
+                    TextFieldWithLabel("Quantity / Portion Size *", portionSize, onPortionSizeChange, isPassword = false)
+                }
+            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "Macronutrients (Optional)", style = MaterialTheme.typography.labelLarge)
-            TextFieldWithLabel("Protein (g)", protein, onProteinChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
-            Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Carbs (g)", carbs, onCarbsChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
-            Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Fats (g)", fats, onFatsChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
-            Spacer(modifier = Modifier.height(24.dp))
-            TextFieldWithLabel("Calories", calories, onCaloriesChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
+            // Nutrition Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text("Nutrition (Optional)", style = MaterialTheme.typography.titleLarge)
+                    TextFieldWithLabel("Protein (g)", protein, onProteinChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
+                    TextFieldWithLabel("Carbs (g)", carbs, onCarbsChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
+                    TextFieldWithLabel("Fats (g)", fats, onFatsChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
+                    TextFieldWithLabel("Calories", calories, onCaloriesChange, isPassword = false, keyboardType = KeyboardType.Number, numericOnly = true)
+                }
+            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // Submit Button
             Button(
-                onClick = {
-                    println("Just clicked button to submit meal")
-                    onSubmitClick()
-                },
+                onClick = onSubmitClick,
                 enabled = !isSubmitting,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -350,21 +477,11 @@ fun AddMealScreenContent(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("Add")
+                    Text("Add Meal")
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Back")
-            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

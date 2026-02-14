@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nomlymealtracker.R
+import com.example.nomlymealtracker.helper.SessionManager
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -46,6 +48,8 @@ fun LoginScreenPreview() {
             password = "password",
             isLoading = false,
             snackbarHost = SnackbarHostState(),
+            rememberMe = false,
+            onRememberMeChange = {},
             onEmailChange = {},
             onPasswordChange = {},
             onLoginClick = {},
@@ -73,6 +77,9 @@ fun LoginScreen(
     onRegisterClick: () -> Unit,
     onForgotPasswordClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    var rememberMe by rememberSaveable { mutableStateOf(false) }
+
     val email = viewModel.email
     val password = viewModel.password
     val isLoading = viewModel.isLoading
@@ -81,6 +88,7 @@ fun LoginScreen(
 
     LaunchedEffect(loginSuccess, errorMessage) {
         if (loginSuccess) {
+            SessionManager.setRememberMe(context, rememberMe)
             onLoginSuccess()
         }
         errorMessage?.let {
@@ -97,6 +105,9 @@ fun LoginScreen(
 
         isLoading = isLoading,
         snackbarHost = snackbarHost,
+
+        rememberMe = rememberMe,
+        onRememberMeChange = { rememberMe = it },
 
         onEmailChange = { viewModel.email = it },
         onPasswordChange = { viewModel.password = it },
@@ -127,6 +138,9 @@ fun LoginScreenContent(
 
     isLoading: Boolean,
     snackbarHost: SnackbarHostState,
+
+    rememberMe: Boolean,
+    onRememberMeChange: (Boolean) -> Unit,
 
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -195,11 +209,25 @@ fun LoginScreenContent(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Go to the Forgot Password screen
+                // Remember Me checkbox and Forgot Password link
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = rememberMe,
+                            onCheckedChange = onRememberMeChange
+                        )
+                        Text(
+                            text = "Remember Me",
+                            fontSize = 14.sp,
+                            color = Color.Black
+                        )
+                    }
                     TextButton(onClick = onForgotPasswordClick) {
                         Text("Forgot Password?", color = Color.Black, fontSize = 14.sp)
                     }

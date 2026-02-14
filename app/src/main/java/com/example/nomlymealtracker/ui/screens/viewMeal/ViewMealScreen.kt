@@ -15,14 +15,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.ui.unit.dp
 import com.example.nomlymealtracker.ui.theme.NomlyMealTrackerTheme
@@ -201,9 +208,12 @@ fun ViewMealScreenContent(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.onPrimary)
                 .padding(innerPadding)
-                .padding(24.dp)
+                .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Meal Image
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -221,86 +231,149 @@ fun ViewMealScreenContent(
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = Icons.Default.Image,
-                                contentDescription = "Add Image",
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            )
-                            Text(
-                                text = "No Image Available",
-                                style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.Image,
+                            contentDescription = "No Image",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                        Text(
+                            text = "No Image Available",
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // Title & Description
             Text(
                 title,
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(description, style = MaterialTheme.typography.bodyLarge)
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Time Eaten", style = MaterialTheme.typography.titleMedium)
-            Text(timeOfConsumption , style = MaterialTheme.typography.bodyLarge)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text("Meal Type", style = MaterialTheme.typography.titleMedium)
-            Text(selectedMealType.name, style = MaterialTheme.typography.bodyLarge)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text("Portion Size", style = MaterialTheme.typography.titleMedium)
-            Text(portionSize, style = MaterialTheme.typography.bodyLarge)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text("Macronutrients", style = MaterialTheme.typography.titleLarge)
-            MacronutrientRow(label = "Protein", value = protein)
-            MacronutrientRow(label = "Carbs", value = carbs)
-            MacronutrientRow(label = "Fats", value = fats)
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            // Meal Info Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
             ) {
-                Text(
-                    text = "Calories",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = calories ?: "N/A",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text("Created", style = MaterialTheme.typography.titleMedium)
-            Text(Helper.formatTimestamp(timestamp), style = MaterialTheme.typography.bodyLarge)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(modifier = Modifier.fillMaxSize()) {
-                Button(
-                    onClick = onDeleteClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(30),
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Delete Entry", fontSize = 20.sp)
+                    // Meal Type chip
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        tonalElevation = 2.dp
+                    ) {
+                        Text(
+                            text = selectedMealType.displayName,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    // Time Eaten & Portion Size side by side
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Time Eaten", style = MaterialTheme.typography.labelMedium)
+                            Text(timeOfConsumption, style = MaterialTheme.typography.bodyLarge)
+                        }
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Text("Portion Size", style = MaterialTheme.typography.labelMedium)
+                            Text(portionSize, style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+
+                    // Created timestamp
+                    Column {
+                        Text("Created", style = MaterialTheme.typography.labelMedium)
+                        Text(
+                            Helper.formatTimestamp(timestamp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Nutrition Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("Nutrition", style = MaterialTheme.typography.titleLarge)
+
+                    MacronutrientRow(label = "Protein", value = protein)
+                    MacronutrientRow(label = "Carbs", value = carbs)
+                    MacronutrientRow(label = "Fats", value = fats)
+
+                    Divider()
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Calories",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = calories ?: "N/A",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Delete Button
+            Button(
+                onClick = onDeleteClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(30),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Delete Entry", fontSize = 20.sp)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
